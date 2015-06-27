@@ -32,7 +32,7 @@ ReportSuppressedErrorsInMessages=0
 OutputPath=
 
 [Document1]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.PcbLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -48,7 +48,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document2]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.SchLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -64,7 +64,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document3]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.PcbLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -80,7 +80,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document4]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.SchLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -96,7 +96,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document5]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_fp.PcbLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -112,7 +112,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document6]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_sch.SchLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -128,7 +128,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document7]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_device_library.IntLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_device_library.IntLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -176,7 +176,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document10]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_device_library.LibPkg
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_device_library.LibPkg
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -192,7 +192,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document11]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_fp.PcbLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -208,7 +208,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document12]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_sch.SchLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -224,7 +224,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document13]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_fp.PcbLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -240,7 +240,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document14]
-DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_sch.SchLib
+DocumentPath=..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -254,10 +254,6 @@ ClassGenCCAutoRoomEnabled=1
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-
-[GeneratedDocument1]
-DocumentPath=Project Outputs for HLib-Comm-XBee\Design Rule Check - PCB1.html
-DItemRevisionGUID=
 
 [Configuration1]
 Name=Default Configuration
