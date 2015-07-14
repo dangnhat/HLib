@@ -160,7 +160,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document9]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib_footprint_Hien.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib_footprint_Hien.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -176,7 +176,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document10]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib_schelib_Hien.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib_schelib_Hien.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -192,7 +192,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document11]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -208,7 +208,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document12]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\Nhat_Lib.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -224,7 +224,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document13]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -240,7 +240,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document14]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\VioletofSun\VioletofSun.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -256,7 +256,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document15]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_fp.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -272,7 +272,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document16]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_sch.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_connector_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -288,7 +288,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document17]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_device_library.IntLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_device_library.IntLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -304,7 +304,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document18]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_fp.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -320,7 +320,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document19]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_sch.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_discrete_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -336,7 +336,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document20]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_fp.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -352,7 +352,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document21]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_sch.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\HLib\HLib_mcu_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -368,7 +368,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document22]
-DocumentPath=..\..\..\..\..\..\Public\Documents\Altium\AD13\MyLib\ST Microelectronics\ST Microcontroller 32-Bit STM32.IntLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD13\MyLib\ST Microelectronics\ST Microcontroller 32-Bit STM32.IntLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -382,6 +382,26 @@ ClassGenCCAutoRoomEnabled=1
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
+
+[Document23]
+DocumentPath=HLib-MBoard1.PcbLib
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=1
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+
+[GeneratedDocument1]
+DocumentPath=Project Outputs for HLib-MBoard1\Design Rule Check - HLib-MBoard1.html
+DItemRevisionGUID=
 
 [Configuration1]
 Name=Default Configuration
