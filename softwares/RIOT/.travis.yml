@@ -1,0 +1,56 @@
+language: c
+
+cache: apt
+
+env:
+    - NPROC_MAX=8
+
+before_install:
+    - sudo apt-get install emdebian-archive-keyring
+    - echo 'deb http://www.emdebian.org/debian wheezy main' | sudo tee /etc/apt/sources.list.d/emdebian.list > /dev/null
+
+    - echo 'deb http://us.archive.ubuntu.com/ubuntu trusty           main restricted universe multiverse' | sudo tee    /etc/apt/sources.list.d/trusty.list > /dev/null
+    - echo 'deb http://us.archive.ubuntu.com/ubuntu trusty-backports main restricted universe multiverse' | sudo tee -a /etc/apt/sources.list.d/trusty.list > /dev/null
+    - echo 'deb http://us.archive.ubuntu.com/ubuntu trusty-security  main restricted universe multiverse' | sudo tee -a /etc/apt/sources.list.d/trusty.list > /dev/null
+    - echo 'deb http://us.archive.ubuntu.com/ubuntu trusty-updates   main restricted universe multiverse' | sudo tee -a /etc/apt/sources.list.d/trusty.list > /dev/null
+    - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+    - sudo apt-get update
+
+install:
+    - >
+        sudo apt-get install \
+            build-essential \
+            gcc-multilib \
+            gcc-arm-none-eabi \
+            gcc-msp430 \
+            pcregrep \
+            libpcre3 \
+            qemu-system-x86 \
+            python3 \
+            g++-multilib \
+            gcc-avr \
+            binutils-avr \
+            avr-libc \
+            cppcheck \
+    - git config --global user.email "travis@example.com"
+    - git config --global user.name "Travis CI"
+
+    - git remote add riot https://github.com/RIOT-OS/RIOT.git
+    - git fetch riot master
+    - git log -1 --pretty=format:%H riot/master
+
+script:
+    - make -s -C ./examples/default info-concurrency
+    - git rebase riot/master || git rebase --abort
+
+    - ./dist/tools/compile_test/compile_test.py
+    - make -C ./tests/unittests test BOARD=native
+    - make -C ./tests/unittests test BOARD=qemu-i386
+    - ./dist/tools/licenses/check.sh master
+# TODO:
+#   Remove the --error-exitcode=0` when all warnings of cppcheck have been
+#   taken care of in master.
+    - ./dist/tools/cppcheck/check.sh master --error-exitcode=0
+
+notifications:
+    email: false

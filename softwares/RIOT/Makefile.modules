@@ -1,0 +1,14 @@
+include $(RIOTBASE)/Makefile.pseudomodules
+include $(RIOTBASE)/Makefile.defaultmodules
+
+USEMODULE += $(filter-out $(DISABLE_MODULE), $(DEFAULT_MODULE))
+
+INCLUDES += -I$(RIOTBASE)/core/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/include
+ED = $(patsubst %,-DMODULE_%,$(subst -,_,$(USEMODULE) $(USEPKG)))
+EXTDEFINES = $(shell echo $(sort $(ED))|tr 'a-z' 'A-Z')
+REALMODULES = $(filter-out $(PSEUDOMODULES), $(sort $(USEMODULE)))
+export BASELIBS += $(REALMODULES:%=$(BINDIR)%.a)
+
+CFLAGS += $(EXTDEFINES)
+
+export USEMODULE

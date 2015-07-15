@@ -1,0 +1,2 @@
+PSEUDOMODULES += defaulttransceiver
+PSEUDOMODULES += transport_layer
