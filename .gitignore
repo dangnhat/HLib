@@ -2,3 +2,30 @@ History/
 Project Logs for */
 __Previews/
 *.PcbDoc.htm
+
+*.o
+doc/doxygen/html
+doc/doxygen/latex
+doc/doxygen/man
+doc/doxygen/*.log
+*bin
+*~
+*.orig
+.*.swp
+cachegrind.out*
+.project
+.cproject
+.settings
+/toolchain
+
+.cproject
+.settings
+.project
+*\ Default.launch
+
+cscope.out
+tags
+
+bin
+
+incpaths_symbols.xml

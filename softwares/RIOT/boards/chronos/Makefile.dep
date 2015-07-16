@@ -1,0 +1,4 @@
+ifneq (,$(filter defaulttransceiver,$(USEMODULE)))
+	USEMODULE += cc110x_ng
+	USEMODULE += transceiver
+endif

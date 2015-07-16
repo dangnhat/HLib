@@ -1,0 +1,10 @@
+ifneq (,$(filter defaulttransceiver,$(USEMODULE)))
+    USEMODULE += cc110x_ng
+    USEMODULE += transceiver
+endif
+
+ifneq (,$(filter cc110x_ng,$(USEMODULE)))
+    USEMODULE += cc110x_spi
+endif
+
+USEMODULE += msp430_common
