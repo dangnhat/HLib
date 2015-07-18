@@ -32,7 +32,7 @@ ReportSuppressedErrorsInMessages=0
 OutputPath=
 
 [Document1]
-DocumentPath=HLib-Sensor-Accel_Gyro-Pressure.PcbDoc
+DocumentPath=HLib-Sensor-Accel_Gyro-Pressure.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -48,7 +48,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document2]
-DocumentPath=HLib-Sensor-Accel_Gyro-Pressure.SchDoc
+DocumentPath=HLib-Sensor-Accel_Gyro-Pressure.PcbDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
