@@ -51,7 +51,7 @@ ClassGenCCAutoRoomEnabled=1
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=JUSKHFRQ
+DocumentUniqueId=MSDVMPMY
 
 [Document2]
 DocumentPath=PCB1.PcbDoc
@@ -71,7 +71,7 @@ GenerateClassCluster=0
 DocumentUniqueId=THVTTCUL
 
 [Document3]
-DocumentPath=Libs\Nhat_Lib.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\Nhat_Lib.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -85,10 +85,10 @@ ClassGenCCAutoRoomEnabled=1
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=
+DocumentUniqueId=CSURLSAA
 
 [Document4]
-DocumentPath=Libs\Nhat_Lib.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\Nhat_Lib.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -105,7 +105,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document5]
-DocumentPath=Libs\VioletofSun\VioletofSun.LibPkg
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\VioletofSun\VioletofSun.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -122,7 +122,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document6]
-DocumentPath=Libs\VioletofSun\VioletofSun.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\VioletofSun\VioletofSun.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -139,7 +139,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document7]
-DocumentPath=Libs\VioletofSun\VioletofSun.PcbLib.htm
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\HLib\HLib_connector_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -156,7 +156,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document8]
-DocumentPath=Libs\VioletofSun\VioletofSun.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\HLib\HLib_connector_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -173,7 +173,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document9]
-DocumentPath=Libs\HLib\HLib_connector_fp.PcbLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\HLib\HLib_device_library.LibPkg
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -190,7 +190,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document10]
-DocumentPath=Libs\HLib\HLib_connector_sch.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\HLib\HLib_discrete_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -207,7 +207,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document11]
-DocumentPath=Libs\HLib\HLib_device_library.IntLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\HLib\HLib_discrete_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -224,7 +224,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document12]
-DocumentPath=Libs\HLib\HLib_device_library.LibPkg
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\HLib\HLib_mcu_fp.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -241,58 +241,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document13]
-DocumentPath=Libs\HLib\HLib_discrete_fp.PcbLib
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=-1
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=
-
-[Document14]
-DocumentPath=Libs\HLib\HLib_discrete_sch.SchLib
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=-1
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=
-
-[Document15]
-DocumentPath=Libs\HLib\HLib_mcu_fp.PcbLib
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=-1
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=
-
-[Document16]
-DocumentPath=Libs\HLib\HLib_mcu_sch.SchLib
+DocumentPath=C:\Users\Public\Documents\Altium\AD15\MyLib\HLib\HLib_mcu_sch.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
