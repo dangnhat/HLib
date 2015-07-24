@@ -1,4 +1,5 @@
 # HLib
+(work in progress)
 Hardware library from Department of Computer Engineering, HCMUT (for more information, follow this link: https://www.cse.hcmut.edu.vn/~bvhieu/index.php/hlib-project )
 
 The aim of this project is to build up an eco-system for applying embedded system into real world. The eco-system includes an open hardware library, an open software library, and a community of engineers, researchers, and students.
