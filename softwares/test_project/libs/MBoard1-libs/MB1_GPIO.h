@@ -95,6 +95,13 @@ public:
     void gpio_reset(void);
 
     /**
+     * @brief Assign value to a pin.
+     *
+     * @param[in]   value, 1: set, 0: reset.
+     */
+    void gpio_assign_value(uint8_t value);
+
+    /**
      * @brief Initialize EXTI on the specified port/pin.
      *
      * @param[in] trigger Trigger mode.

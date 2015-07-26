@@ -88,6 +88,16 @@ void gpio::gpio_reset(void)
     GPIO_ResetBits(gpio_x[port_source], ((uint16_t) 1 << pin_source));
 }
 
+void gpio::gpio_assign_value(uint8_t value)
+{
+    if (value == 1) {
+        gpio_set();
+    }
+    else {
+        gpio_reset();
+    }
+}
+
 bool gpio::exti_init(exti_trigger_t trigger)
 {
     /* Save trigger state */

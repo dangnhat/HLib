@@ -29,6 +29,10 @@ extern "C" {
 #include "controller.h"
 #endif
 
+#ifdef HLIB_TESTING
+#include "xbee_testing_cmds.h"
+#endif
+
 namespace ha_ns {
 extern kernel_pid_t shell_pid;
 }

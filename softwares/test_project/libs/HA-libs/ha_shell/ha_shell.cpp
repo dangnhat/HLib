@@ -62,6 +62,11 @@ const shell_command_t shell_commands[] = {
     {"scene", "Scene configuration", controller_scene_cmd},
     {"zone", "Zone configuration", controller_zone_cmd},
 #endif
+
+#ifdef HLIB_TESTING
+    /* Device list command */
+    {"xbee_test", "XBee EB testing command", xbee_test},
+#endif
     {NULL, NULL, NULL}
 };
 

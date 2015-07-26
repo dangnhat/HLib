@@ -47,7 +47,7 @@ BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 red
 #----------------------- HA project configuration -----------------------------#
 
 # HA network device type
-CFLAGS += -DHA_CC
+CFLAGS += -DHA_CC -DHLIB_TESTING
 
 # Location for source files and include headers (don't add / in the end)
 SRCLOC += ../../libs/HA-libs
@@ -63,6 +63,7 @@ SRCLOC += ../../libs/BGLib
 SRCLOC += sixlowpan
 SRCLOC += controller
 SRCLOC += ble
+SRCLOC += testing_codes
 
 INCLOC += ../../libs/HA-libs
 INCLOC += ../../libs/MBoard1-libs
@@ -78,6 +79,7 @@ INCLOC += ../../libs/BGLib
 INCLOC += sixlowpan
 INCLOC += controller
 INCLOC += ble
+INCLOC += testing_codes
 INCLOC += .
 
 export CPPMIX =1
