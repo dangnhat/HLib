@@ -11,6 +11,7 @@
 
 /* Includes */
 #include "stdint.h"
+#include "MB1_System.h"
 
 extern "C" {
 }
@@ -51,5 +52,16 @@ int16_t stop_waiting_esc_character(void);
  * @param[in]   us, us to delay.
  */
 void testing_delay_us(uint32_t us);
+
+/**
+ * @brief   Wait to receive usart data within a time period.
+ *
+ * @param[in]   usart_p, pointer to a usart object.
+ * @param[in]   timeout, timeount value (in seconds).
+ * @param[out]  buffer,  buffer to hold data.
+ * @param[in]   len, length of the allocated buffer.
+ */
+void wait_uart_with_timeout(serial_t *usart_p, uint16_t timeout,
+        char *buffer, uint16_t len);
 
 #endif /* OS_DEPENDENT_CODE_H_ */

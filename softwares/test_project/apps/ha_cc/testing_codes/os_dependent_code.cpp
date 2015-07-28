@@ -132,3 +132,36 @@ void testing_delay_us(uint32_t us)
 {
     vtimer_usleep(us);
 }
+
+/*----------------------------------------------------------------------------*/
+void wait_uart_with_timeout(serial_t *usart_p, uint16_t timeout,
+        char *buffer, uint16_t len)
+{
+    uint32_t cur_time;
+    uint16_t pos = 0;
+
+    cur_time = MB1_rtc.get_time_raw();
+    while (1) {
+        if(usart_p->Check_flag(serial_ns::rxne)) {
+            /* Get data to buffer */
+            if (pos < len) {
+                buffer[pos] = usart_p->Get_ISR();
+                pos++;
+            }
+            else {
+                buffer[len] = '\0';
+                break;
+            }
+        }
+
+        if (MB1_rtc.get_time_raw() - cur_time > timeout) {
+            if (pos < len) {
+                buffer[pos] = '\0';
+            }
+            else {
+                buffer[len - 1] = '\0';
+            }
+            break;
+        }
+    }
+}

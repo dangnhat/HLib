@@ -23,6 +23,13 @@
 #define USART_stdStream_stdin 0x2
 #define USART_stdStream_stderr 0x4
 
+namespace serial_ns {
+enum flags_e:uint16_t {
+    txe = (uint16_t)0x0080,
+    rxne = (uint16_t)0x0020,
+};
+}
+
 class serial_t {
 private:
   uint8_t usedUart;
@@ -32,13 +39,14 @@ public:
   void  Print(uint8_t outChar);
   void  Print(char outChar);
   void  Print(uint8_t* outStr);
-  void  Print(char* outStr);
+  void  Print(const char* outStr);
   void  Print(uint32_t outNum);
   void  Print(int32_t outNum);
   void  Out(uint8_t outNum);
   void  Out(uint16_t outNum);
   void  Out(uint32_t outNum);
   void  Out(uint8_t outBuf[], uint32_t bufLen);
+  bool  Check_flag(uint16_t flag);
   uint16_t Get (void);
   uint16_t Get_ISR (void);
 

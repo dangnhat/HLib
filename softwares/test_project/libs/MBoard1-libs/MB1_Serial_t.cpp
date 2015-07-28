@@ -138,7 +138,7 @@ void  serial_t::Print(uint8_t* outStr){
   * @return None
   * @attention The USARTs must be initialized first or an infinitive wait will be executed
   */
-void  serial_t::Print(char* outStr){
+void  serial_t::Print(const char* outStr){
   while (*outStr != '\0'){
     while (USART_GetFlagStatus(_USARTs[usedUart], USART_FLAG_TXE) == RESET);
     USART_SendData(_USARTs[usedUart], (uint8_t) (*outStr));
@@ -233,6 +233,20 @@ void  serial_t::Out(uint32_t outNum){
   USART_SendData(_USARTs[usedUart], (uint8_t) (outNum >> 16));
   while (USART_GetFlagStatus(_USARTs[usedUart], USART_FLAG_TXE) == RESET)  {  };
   USART_SendData(_USARTs[usedUart], (uint8_t) (outNum >> 24));
+}
+
+/**
+  * @brief Check status of a flag.
+  * @return bool
+  * @attention The USARTs must be initialized first or an infinitive wait will be executed
+  */
+bool serial_t::Check_flag(uint16_t flag) {
+    if (USART_GetFlagStatus(_USARTs[usedUart], flag) == RESET) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 /**
