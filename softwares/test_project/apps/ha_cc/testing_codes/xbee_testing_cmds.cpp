@@ -1,10 +1,9 @@
 /**
- * @file xbee_testing_cmds.h
+ * @file xbee_testing_cmds.cpp
  * @author  Pham Huu Dang Nhat  <phamhuudangnhat@gmail.com>.
  * @version 1.0
  * @date 26-July-2015
  * @brief Source file for XBee testing shell commands.
- * (Need initialized MB1_rtc object to implement the timeout code)
  */
 
 #include "xbee_testing_cmds.h"
