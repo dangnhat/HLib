@@ -862,14 +862,18 @@ void isr_usart3(void)
 {
     uint8_t a_count;
 
-    /**< clear IT flag */
-    USART_ClearFlag(USART3, USART_FLAG_RXNE);
-
     for (a_count = 0; a_count < numOfSubISR_max; a_count++) {
         if (USART3_subISR_table[a_count] != NULL) {
             USART3_subISR_table[a_count]();
         }
     }
+
+    /* clear IT flags */
+    USART_ClearITPendingBit  (USART1, USART_IT_RXNE);
+    USART_ClearITPendingBit  (USART1, USART_IT_CTS);
+    USART_ClearITPendingBit  (USART1, USART_IT_LBD);
+    USART_ClearITPendingBit  (USART1, USART_IT_TC);
+
 
     /* RIOT specific code */
     if (sched_context_switch_request) {

@@ -67,6 +67,26 @@ bool gpio::gpio_init(const gpio_params_t *gpio_params)
     return true;
 }
 
+bool gpio::gpio_shutdown(void)
+{
+    GPIO_InitTypeDef gpio_init_struct;
+
+    /* Check params */
+    if (this->port_source > 6 || this->pin_source > 15) {
+        return false;
+    }
+
+    /* Initialize GPIO */
+    gpio_init_struct.GPIO_Pin = (uint16_t) 1 << pin_source;
+    gpio_init_struct.GPIO_Mode = (GPIOMode_TypeDef) in_floating;
+    gpio_init_struct.GPIO_Speed = GPIO_Speed_2MHz;
+
+    GPIO_Init(gpio_x[port_source], &gpio_init_struct);
+    in_mode = true;
+
+    return true;
+}
+
 uint8_t gpio::gpio_read(void)
 {
     if (in_mode) {

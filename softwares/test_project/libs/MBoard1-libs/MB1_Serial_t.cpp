@@ -1,8 +1,9 @@
 /**
  * @file serial_com.cpp
  * @author  Bui Van Hieu <bvhieu@cse.hcmut.edu.vn>
- * @version 1.0
- * @date 07-07-2012
+ *          Pham Huu Dang Nhat <phamhuudangnhat@gmail.com>
+ * @version 1.2
+ * @date 06-Aug-2012
  *
  * @copyright
  * This poject and all of its relevant documents, source codes, compiled libraries are belong
@@ -30,6 +31,7 @@ const uint32_t       _USART_TXD_CLK[NUM_UARTs]  = {RCC_APB2Periph_GPIOA, RCC_APB
 const uint32_t       _USART_RXD_CLK[NUM_UARTs]  = {RCC_APB2Periph_GPIOA, RCC_APB2Periph_GPIOA, RCC_APB2Periph_GPIOB, RCC_APB2Periph_GPIOC, RCC_APB2Periph_GPIOD};
 const uint32_t       _USART_CLK[NUM_UARTs]      = {RCC_APB2Periph_USART1, RCC_APB1Periph_USART2, RCC_APB1Periph_USART3, RCC_APB1Periph_UART4, RCC_APB1Periph_UART5};
       USART_TypeDef* _USARTs[NUM_UARTs]         = {USART1, USART2, USART3, UART4, UART5};
+const IRQn_Type      _USART_IRQns[NUM_UARTs]    = {USART1_IRQn, USART2_IRQn, USART3_IRQn, UART4_IRQn, UART5_IRQn};
 
 /* for retarget */
 static serial_t* USART_stdoutPtr = NULL;
@@ -89,7 +91,37 @@ void  serial_t::Restart(uint32_t baudRate){
   USART_Cmd(_USARTs[usedUart], ENABLE);
 }
 
+/**
+  * @brief Shutdown USART, all IOs will be initialized to IN_FLOATING.
+  * @return None
+  */
+void  serial_t::Shutdown(void) {
+    GPIO_InitTypeDef  GPIO_InitStruct;
 
+    if (usedUart > 4) {
+        return;
+    }
+
+    /*disable USART*/
+    USART_Cmd(_USARTs[usedUart], DISABLE);
+
+    /* disable clock */
+    RCC_APB2PeriphClockCmd(_USART_TXD_CLK[usedUart], DISABLE);
+    RCC_APB2PeriphClockCmd(_USART_RXD_CLK[usedUart], DISABLE);
+    (usedUart==0) ? RCC_APB2PeriphClockCmd(_USART_CLK[usedUart], DISABLE) :
+            RCC_APB1PeriphClockCmd(_USART_CLK[usedUart], DISABLE);
+
+    /* config IO pins */
+    GPIO_InitStruct.GPIO_Pin   = _USART_TXD_PIN[usedUart];
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_Mode  = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(_USART_TXD_PORT[usedUart], &GPIO_InitStruct);
+
+    GPIO_InitStruct.GPIO_Pin   = _USART_RXD_PIN[usedUart];
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_Mode  = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(_USART_RXD_PORT[usedUart], &GPIO_InitStruct);
+}
 
 /**
   * @brief Send one character to serial port
@@ -250,6 +282,16 @@ bool serial_t::Check_flag(uint16_t flag) {
 }
 
 /**
+  * @brief Clear a flag.
+  * @param uint16_t flag, an USART flag to be cleared.
+  * @attention The USARTs must be initialized first or an infinitive wait will be executed
+  */
+void serial_t::Clear_flag(uint16_t flag) {
+    USART_ClearFlag(_USARTs[usedUart], flag);
+}
+
+
+/**
   * @brief get data from serial port
   * @return uint16_t
   * @attention The USARTs must be initialized first or an infinitive wait will be executed
@@ -334,4 +376,58 @@ int _write (int fd, char *ptr, int len) {
     }
 
     return len;
+}
+
+/********* USART interrupt ************/
+/**
+  * @brief Enable interrupt or change interrupt priorities.
+  * @param uint8_t prem_prio, preemptive priority.
+  * @param uint8_t sub_prio, sub priority.
+  * @return None
+  */
+void serial_t::it_enable(uint8_t prem_prio, uint8_t sub_prio)
+{
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    NVIC_InitStructure.NVIC_IRQChannel = _USART_IRQns[this->usedUart];
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = prem_prio;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = sub_prio;
+    NVIC_Init(&NVIC_InitStructure);
+}
+
+/**
+  * @brief Disable interrupt and reset prios to 0xFs.
+  * @return None
+  */
+void serial_t::it_disable(void)
+{
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    NVIC_InitStructure.NVIC_IRQChannel = _USART_IRQns[this->usedUart];
+    NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0xF;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0xF;
+    NVIC_Init(&NVIC_InitStructure);
+}
+
+/**
+  * @brief Change USART interrupt flags.
+  * @param uint16_t it_flags, interrupt flags.
+  * @param bool enable, true to enable these flags. Otherwise, disable them.
+  * @return None
+  */
+void serial_t::it_config(uint16_t it_flags, bool enable)
+{
+    USART_ITConfig(_USARTs[this->usedUart], it_flags, enable ? ENABLE : DISABLE);
+}
+
+/**
+  * @brief Check whether an interrupt has been occurred or not.
+  * @param uint16_t it_flags, interrupt flags.
+  * @return true if interrupt has been occurred. Otherwise, false.
+  */
+bool serial_t::it_get_status(uint16_t it_flag)
+{
+    return USART_GetITStatus(_USARTs[this->usedUart], it_flag) == SET ? true : false;
 }

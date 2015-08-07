@@ -78,6 +78,11 @@ public:
     bool gpio_init(const gpio_ns::gpio_params_t *gpio_params);
 
     /**
+     * @brief Shutdown GPIO on the specified port/pin. Reset this pin to IN_FLOATING.
+     */
+    bool gpio_shutdown(void);
+
+    /**
      * @frief Read level on the pin.
      *
      * @retrurn 0 if pin's in reset, #0 otherwise.
