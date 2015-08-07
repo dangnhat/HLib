@@ -66,6 +66,7 @@ const shell_command_t shell_commands[] = {
 #ifdef HLIB_TESTING
     /* Device list command */
     {"xbee_test", "XBee EB testing command", xbee_test},
+    {"ble_test", "BLE EB testing command", ble_test},
 #endif
     {NULL, NULL, NULL}
 };

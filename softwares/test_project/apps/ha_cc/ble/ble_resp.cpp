@@ -38,27 +38,27 @@ cir_queue usart_queue(usart_queue_buf, usart_queue_size);
  * BLE112 Event Callback
  ******************************************************************************/
 
-void ble_evt_system_boot(const struct ble_msg_system_boot_evt_t *msg)
-{
-    msg_t bleThreadMsg;
-    bleThreadMsg.type = ha_cc_ns::BLE_SERVER_RESET;
-    msg_send(&bleThreadMsg, ble_thread_ns::ble_thread_pid, false);
-}
-
-void ble_rsp_system_reset(const void *nul)
-{
-    HA_DEBUG("--- system reset ---\n");
-}
-
-void ble_rsp_system_hello(const void *nul)
-{
-    HA_DEBUG("-- hello --\n");
-}
-
-void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
-{
-    HA_DEBUG("-- system get info -- \n");
-}
+//void ble_evt_system_boot(const struct ble_msg_system_boot_evt_t *msg)
+//{
+//    msg_t bleThreadMsg;
+//    bleThreadMsg.type = ha_cc_ns::BLE_SERVER_RESET;
+//    msg_send(&bleThreadMsg, ble_thread_ns::ble_thread_pid, false);
+//}
+//
+//void ble_rsp_system_reset(const void *nul)
+//{
+//    HA_DEBUG("--- system reset ---\n");
+//}
+//
+//void ble_rsp_system_hello(const void *nul)
+//{
+//    HA_DEBUG("-- hello --\n");
+//}
+//
+//void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
+//{
+//    HA_DEBUG("-- system get info -- \n");
+//}
 
 void ble_rsp_hardware_set_soft_timer(
         const struct ble_msg_hardware_set_soft_timer_rsp_t *msg)
