@@ -67,6 +67,8 @@ const shell_command_t shell_commands[] = {
     /* Device list command */
     {"xbee_test", "XBee EB testing command", xbee_test},
     {"ble_test", "BLE EB testing command", ble_test},
+    {"rs485_test", "RS485 EB testing command", rs485_test},
+    {"led7seg_test", "LED7SEG EB testing command", led7seg_test},
 #endif
     {NULL, NULL, NULL}
 };

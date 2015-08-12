@@ -32,6 +32,8 @@ extern "C" {
 #ifdef HLIB_TESTING
 #include "xbee_testing_cmds.h"
 #include "ble_testing_cmds.h"
+#include "rs485_testing_cmds.h"
+#include "led7seg_testing_cmds.h"
 #endif
 
 namespace ha_ns {
