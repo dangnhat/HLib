@@ -19,7 +19,6 @@ extern "C" {
 /* Includes other shell commands modules */
 #include "shell_cmds_fatfs.h"
 #include "shell_cmds_time.h"
-#include "shell_cmds_sixlowpan.h"
 
 #ifdef HA_HOST
 #include "shell_cmds_dev_config.h"
@@ -32,6 +31,7 @@ extern "C" {
 #ifdef HLIB_TESTING
 #include "xbee_testing_cmds.h"
 #include "ble_testing_cmds.h"
+#include "eth_testing_cmds.h"
 #endif
 
 namespace ha_ns {

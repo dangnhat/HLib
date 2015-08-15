@@ -39,7 +39,7 @@ const shell_command_t shell_commands[] = {
     {"date", "Print or set the system date and time", date},
 
     /* sixlowpan cmds */
-    {"6lowpan", "6LoWPAN network stack configurations", sixlowpan_config},
+//    {"6lowpan", "6LoWPAN network stack configurations", sixlowpan_config},
 
 #ifdef HA_HOST
     /* device configuration cmds */
@@ -67,6 +67,7 @@ const shell_command_t shell_commands[] = {
     /* Device list command */
     {"xbee_test", "XBee EB testing command", xbee_test},
     {"ble_test", "BLE EB testing command", ble_test},
+    {"eth_test", "ETH EB testing command", eth_test},
 #endif
     {NULL, NULL, NULL}
 };
