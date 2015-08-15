@@ -279,7 +279,7 @@ void add_hdr_to_ble_msg(uint8_t msgType, uint8_t* ack_idx_buf, uint8_t* payload,
     header[2] = ack_idx_buf[1];
 
     memmove(payload + 3, payload, bufLen);
-    mempcpy(payload, header, sizeof(header));
+    memcpy(payload, header, sizeof(header));
 }
 
 void send_ack_to_mobile()
