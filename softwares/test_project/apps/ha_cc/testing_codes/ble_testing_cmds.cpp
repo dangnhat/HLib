@@ -42,7 +42,7 @@ static gpio MB1_rst;
 /* End configuration data */
 
 /* Shell command usages */
-const char ble_test_usage[] = "Usage:\n"
+static const char ble_test_usage[] = "Usage:\n"
         "ble_test -i, initialize hardware and data for the test.\n"
         "ble_test -d, deinitialize hardware and data for the test.\n"
         "ble_test -w, warm reset test.\n"
@@ -356,4 +356,50 @@ void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
             "\tll version(%hu), protocol version(%hu),\n"
             "\thw version(%hu).\n", msg->major, msg->minor, msg->patch, msg->build,
             msg->ll_version, msg->protocol_version, msg->hw);
+}
+
+/*----------------------------------------------------------------------------*/
+void ble_rsp_hardware_set_soft_timer(
+        const struct ble_msg_hardware_set_soft_timer_rsp_t *msg)
+{
+    HA_DEBUG("-- set soft timer --\n");
+
+}
+
+/*----------------------------------------------------------------------------*/
+void ble_rsp_sm_set_bondable_mode(const void *nul)
+{
+    HA_DEBUG("-- bondable --\n");
+}
+
+/*----------------------------------------------------------------------------*/
+void ble_rsp_gap_set_mode(const struct ble_msg_gap_set_mode_rsp_t *msg)
+{
+    HA_DEBUG("-- discoverable --\n");
+}
+
+/*----------------------------------------------------------------------------*/
+void ble_evt_connection_disconnected(
+        const struct ble_msg_connection_disconnected_evt_t *msg)
+{
+    HA_DEBUG("-- remote device disconnected --\n");
+}
+
+/*----------------------------------------------------------------------------*/
+void ble_evt_attributes_value(const struct ble_msg_attributes_value_evt_t *msg)
+{
+    HA_DEBUG("client write \n");
+}
+
+/*----------------------------------------------------------------------------*/
+void ble_rsp_attributes_write(const struct ble_msg_attributes_write_rsp_t *msg)
+{
+    HA_DEBUG("-- write local--\n");
+}
+
+/*----------------------------------------------------------------------------*/
+void ble_evt_connection_status(
+        const struct ble_msg_connection_status_evt_t *msg)
+{
+    HA_DEBUG("-- client connected --\n");
 }
