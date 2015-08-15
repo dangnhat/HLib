@@ -1,10 +1,10 @@
 /**
  * @file MB1_SPI.h
  * @author  Pham Huu Dang Nhat  <phamhuudangnhat@gmail.com>, HLib MBoard team.
- * @version 1.2
- * @date 15-11-2013
+ * @version 1.4
+ * @date 11-Aug-2015
  * @brief This is source file for SPIs on MBoard-1. MBoard-1 only supports SP1 and
- * SP2 as AF. SPI1 on APB2 clock brigde with Fmax = SystemClock, SP2 on APB1 with
+ * SP2 as AF. SPI1 on APB2 clock bridge with Fmax = SystemClock, SPI2 on APB1 with
  * Fmax = SystemClock/2.
  */
 
@@ -12,7 +12,7 @@
 
 using namespace SPI_ns;
 
-/**< sys_config, we should config at compile time. */
+/* sys_config, we should config at compile time. */
 /* Private vars and definitions */
 SPI_TypeDef* SPIs [numOfSPIs] = {SPI1, SPI2};
 uint32_t RCCSPIs [numOfSPIs] = {RCC_APB2Periph_SPI1, RCC_APB1Periph_SPI2};
@@ -50,17 +50,21 @@ const uint16_t hard_NSS_pins [numOfSPIs][2] = {   {GPIO_Pin_4, GPIO_Pin_15},  //
                                                         {GPIO_Pin_12, 0} };            //SPI2
 uint32_t hard_NSS_RCCs [numOfSPIs][2] = {         {RCC_APB2Periph_GPIOA, RCC_APB2Periph_GPIOA},   //SPI1
                                                         {RCC_APB2Periph_GPIOB, 0} };                        //SPI2
-/**< end sys_conf */
+/* end sys_conf */
 
 /* Functions implementation for class SPI */
 SPI::SPI (uint16_t usedSPI){
     this->usedSPI = usedSPI - 1;
 
-    /**< init default value for data member */
+    /* init default value for data member */
     SS_pins_set = 0x00;
     SM_numOfNSSLines = 0;
     SM_numOfDevices = 0x01 << SM_numOfNSSLines;
-    SM_deviceInUse = allFree;
+    SM_deviceInUse = all_free;
+
+    for (uint8_t count = 0; count < SPI_ns::SSLines_max; count++) {
+        soft_nss_gpios[count] = NULL;
+    }
 }
 
 /**
@@ -71,14 +75,14 @@ SPI::SPI (uint16_t usedSPI){
 void SPI::M2F_GPIOs_Init (void) {
     bool remap_value = GPIO_isRemap [usedSPI];
 
-    /**< Init RCC */
+    /* Init RCC */
     RCC_APB2PeriphClockCmd (MOSI_RCCs[usedSPI][remap_value], ENABLE);
     RCC_APB2PeriphClockCmd (MISO_RCCs[usedSPI][remap_value], ENABLE);
     RCC_APB2PeriphClockCmd (SCK_RCCs[usedSPI][remap_value], ENABLE);
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
-    /**< Init MOSI, MISO, SCK */
+    /* Init MOSI, MISO, SCK */
     GPIO_InitTypeDef GPIO_InitStruct;
 
     GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
@@ -97,11 +101,37 @@ void SPI::M2F_GPIOs_Init (void) {
 }
 
 /**
+  * @brief Deinit GPIOs for MOSI, MISO, SCK.
+  * @return None
+  * @attention set remap value for SPI properly.
+  */
+void SPI::M2F_GPIOs_Deinit (void){
+    bool remap_value = GPIO_isRemap [usedSPI];
+
+    /* Init MOSI, MISO, SCK */
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
+
+    GPIO_InitStruct.GPIO_Pin = MOSI_pins[usedSPI][remap_value];
+    GPIO_Init (MOSI_ports[usedSPI][remap_value], &GPIO_InitStruct);
+
+    GPIO_InitStruct.GPIO_Pin = SCK_pins[usedSPI][remap_value];
+    GPIO_Init (SCK_ports[usedSPI][remap_value], &GPIO_InitStruct);
+
+    GPIO_InitStruct.GPIO_Pin = MISO_pins[usedSPI][remap_value];
+    GPIO_Init (MISO_ports[usedSPI][remap_value], &GPIO_InitStruct);
+
+    return;
+}
+
+/**
   * @brief Init SPI, base on parameters.
   * @return SPI_ns::status_t.
   * @attention I have implemented this function only for master mode, 2 lines, full duplex.
   */
-status_t SPI::init (SPI_params_t *params_struct){
+status_t SPI::init (const SPI_params_t *params_struct){
 
     /* Init SPI */
     (* RCCSPI_FPtrs[usedSPI])(RCCSPIs[usedSPI], ENABLE);
@@ -122,12 +152,15 @@ status_t SPI::init (SPI_params_t *params_struct){
     /* Enable SPI */
     SPI_Cmd (SPIs[usedSPI], ENABLE);
 
+    /* save direction data */
+    spi_direction = params_struct->direction;
+
     /* Init NSS if NSS is hard_NSS */
     if (params_struct->nss == SPI_NSS_Hard){
         //TODO: implement for hard NSS if needed.
     }
 
-    /**< Master mode init */
+    /* Master mode init */
     if ( params_struct->mode == SPI_Mode_Master ){
         switch (params_struct->direction){
 
@@ -144,10 +177,31 @@ status_t SPI::init (SPI_params_t *params_struct){
     return successful;
 }
 
+/**
+  * @brief Deinit SPI, Turn on RCC clock, disable SPI and deinitialize all IOs to IN_FLOATING.
+  * @attention I have implemented this function only for master mode, 2 lines, full duplex.
+  */
+void SPI::deinit (void){
+    /* Disable RCC clock of SPI module */
+    SPI_Cmd (SPIs[usedSPI], DISABLE);
+    (* RCCSPI_FPtrs[usedSPI])(RCCSPIs[usedSPI], DISABLE);
 
-/**< -------------- master mode --------------------------------*/
+    /* Init all used IOs to IN_FLOATING */
+    switch (spi_direction){
 
-/**< slave_mgr interface */
+    case SPI_Direction_2Lines_FullDuplex :
+        M2F_GPIOs_Deinit ();
+        break;
+
+    default :
+        break;
+
+    }/* end switch-case */
+}
+
+/* -------------- master mode --------------------------------*/
+
+/* slave_mgr interface */
 
 /**
   * @brief SM_numOfSSLines_set.
@@ -155,7 +209,7 @@ status_t SPI::init (SPI_params_t *params_struct){
   * @return SPI_ns::status_t
   */
 status_t SPI::SM_numOfSSLines_set (uint8_t numOfSSLines){
-    /**< update SM_num_of_ss_lines */
+    /* update SM_num_of_ss_lines */
     if (numOfSSLines > SSLines_max)
         return failed;
 
@@ -167,32 +221,22 @@ status_t SPI::SM_numOfSSLines_set (uint8_t numOfSSLines){
 
 /**
   * @brief SM_GPIO_set, map a GPIO to a SSLine.
-  * @param SPI_ns::SM_GPIOs_params *params_struct, params_struct->ss_lines is : 0 <= and < SPI_SSLines_max.
+  * @param gpio* gpio_p, pointer to an initialized gpio object.
+  * @param ss_line is : 0 <= and < SPI_SSLines_max.
   * @return SPI_ns::status_t
   * @attention GPIO will be init-ed, SM_numOfSSLines must be set up before.
   */
-status_t SPI::SM_GPIO_set (SM_GPIOParams_s *params_struct){
-    /**< check conditions */
-    if (params_struct->ssLine >= SSLines_max)
+status_t SPI::SM_GPIO_set (gpio* gpio_p, uint8_t ss_line){
+    /* check conditions */
+    if (ss_line >= SSLines_max)
         return failed;
 
-    /**< map GPIO to a ssLine */
-    uint8_t line = params_struct->ssLine;
+    /* map GPIO to a ssLine */
+    uint8_t line = ss_line;
 
-    softNSS_ports[line] = params_struct->GPIO_port;
-    softNSS_pins[line] = params_struct->GPIO_pin;
-    softNSS_RCCs[line] = params_struct->GPIO_clk;
+    soft_nss_gpios[line] = gpio_p;
 
-    /**< Init GPIO */
-    RCC_APB2PeriphClockCmd (softNSS_RCCs[line], ENABLE);
-
-    GPIO_InitTypeDef GPIO_init_struct;
-    GPIO_init_struct.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_init_struct.GPIO_Pin = softNSS_pins[line];
-    GPIO_init_struct.GPIO_Speed = GPIO_Speed_10MHz;
-    GPIO_Init (softNSS_ports[line], &GPIO_init_struct);
-
-    /**< update SS_pins_set */
+    /* update SS_pins_set */
     SS_pins_set |= (0x01 << (line + 1) );
 
     return successful;
@@ -200,36 +244,55 @@ status_t SPI::SM_GPIO_set (SM_GPIOParams_s *params_struct){
 
 /**
   * @brief SM_deviceToDecoder_set, map a device id to decoder value table.
-  * @param SPI_ns::SM_device_t device : a device id.
+  * @param SPI_ns::uint16_t device : a device id.
   * @param uint8_t decode_value : when select a device id, decoder ic use decoder_value to set one of its pin low.
   * decode_value = 0 -> SM_numOfDevices-1.
   * @return SPI_ns::status_t
-  * This function will set SM_decode_value_all_free if device is SPI_ns::allFree (use in select, deselect a device)
+  * This function will set SM_decode_value_all_free if device is SPI_ns::all_free (use in select, deselect a device)
   * and init decoder to all_free value ( call SM_device_deselect () ).
   */
-status_t SPI::SM_deviceToDecoder_set (SM_device_t device, uint8_t decode_value){
+status_t SPI::SM_deviceToDecoder_set (uint16_t device, uint8_t decode_value){
     if (decode_value >= SM_numOfDevices)
         return failed;
 
     SM_deviceToDecoder_table [decode_value] = device;
 
-    if (device == allFree){
+    if (device == all_free){
         SM_decode_all_free = decode_value;
-        SM_deviceInUse = allFree;
-        this->SM_device_deselect(allFree);
+        SM_deviceInUse = all_free;
+        this->SM_device_deselect(all_free);
     }
 
     return successful;
 }
 
+void SPI::SM_deinit(void){
+
+    /* Deinit all IOs */
+    for (uint8_t count = 0; count < SPI_ns::SSLines_max; count++) {
+        if (soft_nss_gpios[count] != NULL) {
+            soft_nss_gpios[count]->gpio_shutdown();
+        }
+    }
+
+    /* Clean all data */
+    SM_numOfNSSLines = 0;
+    SM_numOfDevices = 0;
+    SS_pins_set = 0;
+
+    for (uint8_t count = 0; count < SPI_ns::SSLines_max; count++) {
+        soft_nss_gpios[count] = NULL;
+    }
+}
+
 /**
   * @brief SM_device_attach, attach SPI to a device if SPI is free.
-  * @param SPI_ns::SM_device_t device : a device id.
+  * @param SPI_ns::uint16_t device : a device id.
   * @return status_t
   * @attention SM_deviceToDecoder_table have been set up.
   */
-status_t SPI::SM_device_attach (SM_device_t device){
-    if (this->SM_deviceInUse != allFree)
+status_t SPI::SM_device_attach (uint16_t device){
+    if (this->SM_deviceInUse != all_free)
         return busy;
 
     this->SM_deviceInUse = device;
@@ -267,46 +330,42 @@ status_t SPI::SM_decodeValueInUse_update (void){
 
 /**
   * @brief SM_device_release, release SPI to a device if SPI is using by this device.
-  * @param SPI_ns::SM_device_t device : a device id.
+  * @param SPI_ns::uint16_t device : a device id.
   * @return SPI_ns::status_t.
-  * This function will deslect device and set SM_deviceInUse = allFree, also set allFree value for decoder.
+  * This function will deslect device and set SM_deviceInUse = all_free, also set all_free value for decoder.
   */
-status_t SPI::SM_device_release (SM_device_t device){
+status_t SPI::SM_device_release (uint16_t device){
     if (device != SM_deviceInUse)
         return failed;
 
     SM_device_deselect(SPI::SM_deviceInUse);
-    this->SM_deviceInUse = allFree;
+    this->SM_deviceInUse = all_free;
     return successful;
 }
 
 /**
   * @brief SM_device_select, set CS of the device on. (usually CS = low).
-  * @param SPI_ns::SM_device_t device : a device id.
+  * @param SPI_ns::uint16_t device : a device id.
   * @return SPI_ns::status_t.
   * @attention : SPI_decode_value_in_use has been set up in attach function. All ss_lines have been set up.
   * - The device called this function has attached successfully before. Otherwise, there will be an infinite loop.
   */
-status_t SPI::SM_device_select (SM_device_t device){
-    /**< check conditions */
+status_t SPI::SM_device_select (uint16_t device){
+    /* check conditions */
     if ((SS_pins_set & 0xFFFE) != ((0x01 << (SM_numOfNSSLines + 1)) - 2) ) // Not all SSLines have been set up.
         return failed;
 
-    /**< check device */
+    /* check device */
     if (device != SM_deviceInUse){
         while (1);
     }
 
-    /**< okay, all ss_lines have been set, set decode value to select device*/
+    /* okay, all ss_lines have been set, set decode value to select device*/
     uint8_t temp_value, i;
     temp_value = SM_decodeValueInUse;
 
     for (i = 0; i < SM_numOfNSSLines; i++){
-        if ((temp_value & 0x01) == 0)
-            GPIO_ResetBits (softNSS_ports[i], softNSS_pins[i]);
-        else
-            GPIO_SetBits (softNSS_ports[i], softNSS_pins[i]);
-
+        soft_nss_gpios[i]->gpio_assign_value(temp_value & 0x01);
         temp_value = temp_value >> 1;
     }
 
@@ -315,51 +374,47 @@ status_t SPI::SM_device_select (SM_device_t device){
 
 /**
   * @brief SM_device_deselect, deassert CS of the device on. (usually CS = high).
-  * @param SPI_ns::SM_device_t device : a device id.
+  * @param SPI_ns::uint16_t device : a device id.
   * @return SPI_typesstatus_t.
   * @attention : SPI_decode_value_in_use has been set up in attach function. All ss_lines have been set up.
   * - The device called this function has attached successfully before. Otherwise, there will be an infinite loop.
   */
-status_t SPI::SM_device_deselect (SM_device_t device){
-    /**< check conditions */
+status_t SPI::SM_device_deselect (uint16_t device){
+    /* check conditions */
     if ((SS_pins_set & 0xFFFE) != ((0x01 << (SM_numOfNSSLines + 1)) - 2) ) // Not all SSLines have been set up.
         return failed;
 
-    /**< check device */
+    /* check device */
     if (device != SM_deviceInUse){
         while (1);
     }
 
-    /**< okay, set decoder's value to all_free */
+    /* okay, set decoder's value to all_free */
     uint8_t temp_value, i;
     temp_value = SM_decode_all_free;
 
     for (i = 0; i < SM_numOfNSSLines; i++){
-        if ((temp_value & 0x01) == 0)
-            GPIO_ResetBits (softNSS_ports[i], softNSS_pins[i]);
-        else
-            GPIO_SetBits (softNSS_ports[i], softNSS_pins[i]);
-
+        soft_nss_gpios[i]->gpio_assign_value(temp_value & 0x01);
         temp_value = temp_value >> 1;
     }
 
     return successful;
 }
 
-/**< end slave_mgr */
+/* end slave_mgr */
 
-/**< master 2 lines, full duplex interface */
+/* master 2 lines, full duplex interface */
 
 /**
   * @brief M2F_sendAndGet_blocking, send data and read received data.
-  * @param SPI_ns::SM_device_t device : a device id.
+  * @param SPI_ns::uint16_t device : a device id.
   * @param uint16_t data.
   * @return uint16_t : received data
   * @attention : blocking functions.
   * - The device called this function has attached successfully before. Otherwise, there will be an infinite loop.
   */
-uint16_t SPI::M2F_sendAndGet_blocking (SM_device_t device, uint16_t data){
-    /**< check device */
+uint16_t SPI::M2F_sendAndGet_blocking (uint16_t device, uint16_t data){
+    /* check device */
     if (device != SM_deviceInUse){
         while (1);
     }
@@ -375,11 +430,11 @@ uint16_t SPI::M2F_sendAndGet_blocking (SM_device_t device, uint16_t data){
     return SPI_I2S_ReceiveData (SPIs[usedSPI]);
 }
 
-/**< master 2 lines, full duplex interface */
+/* master 2 lines, full duplex interface */
 
-/**< -------------- master mode --------------------------------*/
+/* -------------- master mode --------------------------------*/
 
-/**< -------------- misc functions ------------------------------*/
+/* -------------- misc functions ------------------------------*/
 
 /**
   * @brief misc_MISO_read, read input data on MISO pin of using SPI.
@@ -393,5 +448,5 @@ uint8_t SPI::misc_MISO_read (void){
 
 	return GPIO_ReadInputDataBit (MISO_ports[usedSPI][remap_value], MISO_pins[usedSPI][remap_value]);
 }
-/**< -------------- misc functions ------------------------------*/
+/* -------------- misc functions ------------------------------*/
 

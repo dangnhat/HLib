@@ -1,8 +1,8 @@
 /**
  * @file MB1_SPI.h
  * @author  Pham Huu Dang Nhat  <phamhuudangnhat@gmail.com>, HLib MBoard team.
- * @version 1.3
- * @date 9-4-2013
+ * @version 1.4
+ * @date 11-Aug-2015
  * @brief This is header file for SPIs on MBoard-1. MBoard-1 only supports SP1 and
  * SP2 as AF. SPI1 on APB2 clock brigde with Fmax = SystemClock, SP2 on APB1 with
  * Fmax = SystemClock/2.
@@ -17,6 +17,11 @@
  *  + attach SPI to a device.
  *  + do somethings.
  *  + after finished, release SPI, so other device can use.
+ *
+ * @History:
+ * 1.4: changed to use gpio class for NSS lines and fixed some typos.
+ *      Removed slave select decoding table inside this lib. Thus, users must defined
+ *      their own tables, which must link to initial table inside this lib.
  */
 
 #ifndef _MB1_SPI_H_
@@ -24,19 +29,20 @@
 
 /* Includes */
 #include "MB1_Glb.h"
+#include "MB1_GPIO.h"
 #include "MB1_Misc.h"
 
 namespace SPI_ns{
 
-/**< config (compile-time), we should config at compile time. */
+/* config (compile-time), we should config at compile time. */
 const uint8_t numOfSPIs = 2;
 const uint8_t SSLines_max = 3;
 const uint8_t SSDevices_max = 0x01 << SSLines_max;
 
-/**< config (compile-time), we should config at compile time. */
+/* config (compile-time), we should config at compile time. */
 
-/**< SPI_global */
-typedef enum {
+/* SPI_global */
+typedef enum: uint8_t {
     successful,
     failed,
     busy,
@@ -44,47 +50,84 @@ typedef enum {
 
 } status_t;
 
-/**< end SPI_global */
+/* end SPI_global */
 
 
-/**< conf (run-time) typedefs and global vars */
+/* conf (run-time) typedefs and global vars */
 typedef struct {
-    uint16_t baudRatePrescaler;   //SPI_BaudRatePrescaler_X, where X can be : 2,4,8,16,32,64,128,256
+    uint16_t baudRatePrescaler;     //SPI_BaudRatePrescaler_X, where X can be : 2,4,8,16,32,64,128,256
     uint16_t CPHA;                  //SPI_CPHA_1Edge or SPI_CPHA_2Edge
     uint16_t CPOL;                  //SPI_CPOL_High or SPI_CPOL_Low
     uint16_t crcPoly;
-    uint16_t dataSize;             //SPI_DataSize_16b or SPI_DataSize_8b
+    uint16_t dataSize;              //SPI_DataSize_16b or SPI_DataSize_8b
     uint16_t direction;             //SPI_Direction_1Line_Rx, SPI_Direction_1Line_Tx, SPI_Direction_2Lines_FullDuplex, SPI_Direction_2Lines_RxOnly
-    uint16_t firstBit;             //SPI_FirstBit_LSB or SPI_FirstBit_MSB
+    uint16_t firstBit;              //SPI_FirstBit_LSB or SPI_FirstBit_MSB
     uint16_t mode;                  //SPI_Mode_Master, SPI_Mode_Slave
     uint16_t nss;                   //SPI_NSS_Hard, SPI_NSS_Soft.
 } SPI_params_t;
 
-/**< end conf (run-time) */
+enum buadrate_prescaler_e: uint16_t {
+    bp2 = SPI_BaudRatePrescaler_2,
+    bp4 = SPI_BaudRatePrescaler_4,
+    bp8 = SPI_BaudRatePrescaler_8,
+    bp16 = SPI_BaudRatePrescaler_16,
+    bp32 = SPI_BaudRatePrescaler_32,
+    bp64 = SPI_BaudRatePrescaler_64,
+    bp128 = SPI_BaudRatePrescaler_128,
+    bp256 = SPI_BaudRatePrescaler_256,
+};
 
-/**< -------------- master mode --------------------------------*/
+enum CPHA_e: uint16_t {
+    cpha_1edge = SPI_CPHA_1Edge,
+    cpha_2edge = SPI_CPHA_2Edge,
+};
 
-/**< slave_mgr interface */
-typedef struct {
-    GPIO_TypeDef * GPIO_port;
-    uint16_t GPIO_pin;
-    uint32_t GPIO_clk;
+enum CPOL_e: uint16_t {
+    cpol_low = SPI_CPOL_Low,
+    cpol_high = SPI_CPOL_High,
+};
 
-    uint8_t ssLine;
-} SM_GPIOParams_s;
+enum datasize_e: uint16_t {
+    d8b = SPI_DataSize_8b,
+    d16b = SPI_DataSize_16b,
+};
 
-typedef enum {
-    allFree,
-    cc1101_1,
-    cc2530_1,
-    at25Flash_1,
-    at25Flash_2
+enum direction_e: uint16_t {
+    dr_1line_rx = SPI_Direction_1Line_Rx,
+    dr_1line_tx = SPI_Direction_1Line_Tx,
+    dr_2lines_fullduplex = SPI_Direction_2Lines_FullDuplex,
+    dr_2lines_rxonly = SPI_Direction_2Lines_RxOnly,
+};
 
-} SM_device_t;
+enum mode_e: uint16_t {
+    master = SPI_Mode_Master,
+    slave = SPI_Mode_Slave,
+};
 
-/**< end slave_mgr */
+enum firstbit_e: uint16_t {
+    msb_first = SPI_FirstBit_MSB,
+    lsb_first = SPI_FirstBit_LSB,
+};
 
-/**< -------------- master mode --------------------------------*/
+enum nss_mode_e: uint16_t {
+    soft_nss = SPI_NSS_Soft,
+    hard_nss = SPI_NSS_Hard,
+};
+
+/* end conf (run-time) */
+
+/* -------------- master mode --------------------------------*/
+
+/* slave_mgr interface */
+enum sm_decoding_table_e: uint16_t {
+    all_free,
+
+    last_of_initial_table,
+};
+
+/* end slave_mgr */
+
+/* -------------- master mode --------------------------------*/
 }
 
 class SPI {
@@ -92,68 +135,71 @@ class SPI {
 public:
     SPI (uint16_t usedSPI);
 
-    /**< conf (run-time) interface */
-    SPI_ns::status_t init (SPI_ns::SPI_params_t *params_struct);
+    /* conf (run-time) interface */
+    SPI_ns::status_t init (const SPI_ns::SPI_params_t *params_struct);
+    void deinit(void);
 
-    /**< end conf (run-time) */
+    /* end conf (run-time) */
 
-    /**< -------------- master mode --------------------------------*/
+    /* -------------- master mode --------------------------------*/
 
-    /**< slave_mgr interface (soft NSS) */
+    /* slave_mgr interface (soft NSS) */
 
-    /**< conf (run-time) */
+    /* conf (run-time) */
     SPI_ns::status_t SM_numOfSSLines_set (uint8_t numOfSSLines);
-    SPI_ns::status_t SM_GPIO_set (SPI_ns::SM_GPIOParams_s *params_struct);
-    SPI_ns::status_t SM_deviceToDecoder_set (SPI_ns::SM_device_t device, uint8_t decode_value);
-    /**< conf (run-time) */
+    SPI_ns::status_t SM_GPIO_set (gpio* gpio_p, uint8_t ss_line);
+    SPI_ns::status_t SM_deviceToDecoder_set (uint16_t device, uint8_t decode_value);
+    void SM_deinit(void);
+    /* conf (run-time) */
 
-    SPI_ns::status_t SM_device_attach (SPI_ns::SM_device_t device);
-    SPI_ns::status_t SM_device_release (SPI_ns::SM_device_t device);
+    SPI_ns::status_t SM_device_attach (uint16_t device);
+    SPI_ns::status_t SM_device_release (uint16_t device);
 
-    SPI_ns::status_t SM_device_select (SPI_ns::SM_device_t device);
-    SPI_ns::status_t SM_device_deselect (SPI_ns::SM_device_t device);
+    SPI_ns::status_t SM_device_select (uint16_t device);
+    SPI_ns::status_t SM_device_deselect (uint16_t device);
 
-    /**< end slave_mgr */
+    /* end slave_mgr */
 
-    /**< master 2 lines, full duplex interface */
-    uint16_t M2F_sendAndGet_blocking (SPI_ns::SM_device_t device, uint16_t data);
+    /* master 2 lines, full duplex interface */
+    uint16_t M2F_sendAndGet_blocking (uint16_t device, uint16_t data);
 
-    /**< master 2 lines, full duplex interface */
+    /* master 2 lines, full duplex interface */
 
-    /**< misc functions */
+    /* misc functions */
     uint8_t misc_MISO_read (void);
-    /**< misc functions */
+    uint16_t get_usedSPI(void) {return usedSPI + 1;}
+    /* misc functions */
 
-    /**< -------------- master mode --------------------------------*/
+    /* -------------- master mode --------------------------------*/
 
 private:
     uint16_t usedSPI;
+    uint16_t spi_direction = 0;
 
-    /**< app_conf config at run-time by methods */
-    GPIO_TypeDef * softNSS_ports [SPI_ns::SSLines_max];
-    uint16_t softNSS_pins [SPI_ns::SSLines_max];
-    uint32_t softNSS_RCCs [SPI_ns::SSLines_max];
+    /* app_conf config at run-time by methods */
+    gpio *soft_nss_gpios [SPI_ns::SSLines_max];
 
     void M2F_GPIOs_Init (void);
-    /**< end app_conf */
+    void M2F_GPIOs_Deinit (void);
+    /* end app_conf */
 
-    /**< -------------- master mode --------------------------------*/
+    /* -------------- master mode --------------------------------*/
 
-    /**< slave_mgr interface */
+    /* slave_mgr interface */
     uint16_t SS_pins_set;             //It's used to know which SSPin has been set or not, bit 0 is for HardNSS pin.
     uint8_t SM_numOfNSSLines;
     uint8_t SM_numOfDevices; // always = 2^SM_numOfNSSLines
 
-    SPI_ns::SM_device_t SM_deviceToDecoder_table [SPI_ns::SSDevices_max];
-    SPI_ns::SM_device_t SM_deviceInUse;
+    uint16_t SM_deviceToDecoder_table [SPI_ns::SSDevices_max];
+    uint16_t SM_deviceInUse;
     uint8_t SM_decodeValueInUse; // use to select a device, only change when device_in_use change in attach fucntion.
     uint8_t SM_decode_all_free; // use when deselect a device, it set only after set decode value for SPI_allFree.
 
     SPI_ns::status_t SM_decodeValueInUse_update (void);
 
-    /**< end slave_mgr */
+    /* end slave_mgr */
 
-    /**< -------------- master mode --------------------------------*/
+    /* -------------- master mode --------------------------------*/
 };
 
 
