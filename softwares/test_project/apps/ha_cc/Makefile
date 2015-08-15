@@ -47,38 +47,28 @@ BOARD_BLACKLIST := arduino-due avsextrem chronos mbed_lpc1768 msb-430h msba2 red
 #----------------------- HA project configuration -----------------------------#
 
 # HA network device type
-CFLAGS += -DHA_CC -DHLIB_TESTING
+CFLAGS += -DHLIB_TESTING
 
 # Location for source files and include headers (don't add / in the end)
 SRCLOC += ../../libs/HA-libs
 SRCLOC += ../../libs/MBoard1-libs 
 SRCLOC += ../../libs/STM32F10x_StdPeriph_Driver/src
 SRCLOC += ../../libs/misc 
-SRCLOC += ../../libs/RIOT-libs/src
 SRCLOC += ../../libs/FATFileSystem/src
 SRCLOC += ../../libs/HA-libs/ha_shell
 SRCLOC += ../../libs/HA-libs/misc
-SRCLOC += ../../libs/HA-libs/ha_sixlowpan
 SRCLOC += ../../libs/BGLib
-SRCLOC += sixlowpan
-SRCLOC += controller
-SRCLOC += ble
 SRCLOC += testing_codes
 
 INCLOC += ../../libs/HA-libs
 INCLOC += ../../libs/MBoard1-libs
 INCLOC += ../../libs/STM32F10x_StdPeriph_Driver/inc
 INCLOC += ../../libs/misc
-INCLOC += ../../libs/RIOT-libs/inc
 INCLOC += ../../libs/FATFileSystem/src
 INCLOC += ../../libs/HA-libs/ha_shell
 INCLOC += ../../libs/HA-libs/common_def
 INCLOC += ../../libs/HA-libs/misc
-INCLOC += ../../libs/HA-libs/ha_sixlowpan
 INCLOC += ../../libs/BGLib
-INCLOC += sixlowpan
-INCLOC += controller
-INCLOC += ble
 INCLOC += testing_codes
 INCLOC += .
 
@@ -90,9 +80,6 @@ USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += vtimer
-USEMODULE += udp
-USEMODULE += rpl
-USEMODULE += defaulttransceiver
 
 # If you want to add some extra flags when compile c++ files, add these flags
 # to CXXEXFLAGS variable
