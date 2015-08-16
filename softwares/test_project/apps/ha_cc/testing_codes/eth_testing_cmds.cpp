@@ -333,90 +333,88 @@ void eth_rj45_communication_test(void)
     HA_NOTIFY("\n*** RJ45 COMMUNICATION TEST ***\n"
                 "(press ESC to quit).\n");
 
-    while (1) {
-        /* Set mode */
-        HA_NOTIFY("\nSetting mode register...\n");
-        eth_write_register(MB1_spi_p, w5100z, mode_register, 0);
-        HA_NOTIFY("Mode register: %u (should be 0)\n",
-                eth_read_register(MB1_spi_p, w5100z, mode_register));
-        testing_delay_us(1000000);
+    /* Set mode */
+    HA_NOTIFY("\nSetting mode register...\n");
+    eth_write_register(MB1_spi_p, w5100z, mode_register, 0);
+    HA_NOTIFY("Mode register: %u (should be 0)\n",
+            eth_read_register(MB1_spi_p, w5100z, mode_register));
+    testing_delay_us(1000000);
 
-        /* Set MAC address */
-        HA_NOTIFY("\nSetting MAC address...\n");
-        eth_write_register(MB1_spi_p, w5100z, hardware_address_5, w5100_mac[0]);
-        eth_write_register(MB1_spi_p, w5100z, hardware_address_4, w5100_mac[1]);
-        eth_write_register(MB1_spi_p, w5100z, hardware_address_3, w5100_mac[2]);
-        eth_write_register(MB1_spi_p, w5100z, hardware_address_2, w5100_mac[3]);
-        eth_write_register(MB1_spi_p, w5100z, hardware_address_1, w5100_mac[4]);
-        eth_write_register(MB1_spi_p, w5100z, hardware_address_0, w5100_mac[5]);
+    /* Set MAC address */
+    HA_NOTIFY("\nSetting MAC address...\n");
+    eth_write_register(MB1_spi_p, w5100z, hardware_address_5, w5100_mac[0]);
+    eth_write_register(MB1_spi_p, w5100z, hardware_address_4, w5100_mac[1]);
+    eth_write_register(MB1_spi_p, w5100z, hardware_address_3, w5100_mac[2]);
+    eth_write_register(MB1_spi_p, w5100z, hardware_address_2, w5100_mac[3]);
+    eth_write_register(MB1_spi_p, w5100z, hardware_address_1, w5100_mac[4]);
+    eth_write_register(MB1_spi_p, w5100z, hardware_address_0, w5100_mac[5]);
 
-        /* Read back MAC address */
-        HA_NOTIFY("\nMAC address: %u:%u:%u:%u:%u:%u.\n",
-                eth_read_register(MB1_spi_p, w5100z, hardware_address_5),
-                eth_read_register(MB1_spi_p, w5100z, hardware_address_4),
-                eth_read_register(MB1_spi_p, w5100z, hardware_address_3),
-                eth_read_register(MB1_spi_p, w5100z, hardware_address_2),
-                eth_read_register(MB1_spi_p, w5100z, hardware_address_1),
-                eth_read_register(MB1_spi_p, w5100z, hardware_address_0));
+    /* Read back MAC address */
+    HA_NOTIFY("MAC address: %x:%x:%x:%x:%x:%x.\n",
+            eth_read_register(MB1_spi_p, w5100z, hardware_address_5),
+            eth_read_register(MB1_spi_p, w5100z, hardware_address_4),
+            eth_read_register(MB1_spi_p, w5100z, hardware_address_3),
+            eth_read_register(MB1_spi_p, w5100z, hardware_address_2),
+            eth_read_register(MB1_spi_p, w5100z, hardware_address_1),
+            eth_read_register(MB1_spi_p, w5100z, hardware_address_0));
 
-        testing_delay_us(1000000);
+    testing_delay_us(1000000);
 
-        /* Set IP */
-        HA_NOTIFY("\nSetting IP address...\n");
-                eth_write_register(MB1_spi_p, w5100z, source_ip_address_3, w5100_source_ip[0]);
-                eth_write_register(MB1_spi_p, w5100z, source_ip_address_2, w5100_source_ip[1]);
-                eth_write_register(MB1_spi_p, w5100z, source_ip_address_1, w5100_source_ip[2]);
-                eth_write_register(MB1_spi_p, w5100z, source_ip_address_0, w5100_source_ip[3]);
+    /* Set IP */
+    HA_NOTIFY("\nSetting IP address...\n");
+            eth_write_register(MB1_spi_p, w5100z, source_ip_address_3, w5100_source_ip[0]);
+            eth_write_register(MB1_spi_p, w5100z, source_ip_address_2, w5100_source_ip[1]);
+            eth_write_register(MB1_spi_p, w5100z, source_ip_address_1, w5100_source_ip[2]);
+            eth_write_register(MB1_spi_p, w5100z, source_ip_address_0, w5100_source_ip[3]);
 
-        /* Read back IP address */
-        HA_NOTIFY("\nIP address: %u.%u.%u.%u.\n",
-                eth_read_register(MB1_spi_p, w5100z, source_ip_address_3),
-                eth_read_register(MB1_spi_p, w5100z, source_ip_address_2),
-                eth_read_register(MB1_spi_p, w5100z, source_ip_address_1),
-                eth_read_register(MB1_spi_p, w5100z, source_ip_address_0));
+    /* Read back IP address */
+    HA_NOTIFY("IP address: %u.%u.%u.%u.\n",
+            eth_read_register(MB1_spi_p, w5100z, source_ip_address_3),
+            eth_read_register(MB1_spi_p, w5100z, source_ip_address_2),
+            eth_read_register(MB1_spi_p, w5100z, source_ip_address_1),
+            eth_read_register(MB1_spi_p, w5100z, source_ip_address_0));
 
-        testing_delay_us(1000000);
+    testing_delay_us(1000000);
 
-        /* Set subnet mask */
-        HA_NOTIFY("\nSetting subnet mask...\n");
-                eth_write_register(MB1_spi_p, w5100z, subnet_mask_3, w5100_subnet_mask[0]);
-                eth_write_register(MB1_spi_p, w5100z, subnet_mask_2, w5100_subnet_mask[1]);
-                eth_write_register(MB1_spi_p, w5100z, subnet_mask_1, w5100_subnet_mask[2]);
-                eth_write_register(MB1_spi_p, w5100z, subnet_mask_0, w5100_subnet_mask[3]);
+    /* Set subnet mask */
+    HA_NOTIFY("\nSetting subnet mask...\n");
+            eth_write_register(MB1_spi_p, w5100z, subnet_mask_3, w5100_subnet_mask[0]);
+            eth_write_register(MB1_spi_p, w5100z, subnet_mask_2, w5100_subnet_mask[1]);
+            eth_write_register(MB1_spi_p, w5100z, subnet_mask_1, w5100_subnet_mask[2]);
+            eth_write_register(MB1_spi_p, w5100z, subnet_mask_0, w5100_subnet_mask[3]);
 
-        /* Read back subnet mask */
-        HA_NOTIFY("\nSubnet mask: %u.%u.%u.%u.\n",
-                eth_read_register(MB1_spi_p, w5100z, subnet_mask_3),
-                eth_read_register(MB1_spi_p, w5100z, subnet_mask_2),
-                eth_read_register(MB1_spi_p, w5100z, subnet_mask_1),
-                eth_read_register(MB1_spi_p, w5100z, subnet_mask_0));
+    /* Read back subnet mask */
+    HA_NOTIFY("Subnet mask: %u.%u.%u.%u.\n",
+            eth_read_register(MB1_spi_p, w5100z, subnet_mask_3),
+            eth_read_register(MB1_spi_p, w5100z, subnet_mask_2),
+            eth_read_register(MB1_spi_p, w5100z, subnet_mask_1),
+            eth_read_register(MB1_spi_p, w5100z, subnet_mask_0));
 
-        testing_delay_us(1000000);
+    testing_delay_us(1000000);
 
-        /* Set default gateway */
-        HA_NOTIFY("\nSetting default gateway...\n");
-                eth_write_register(MB1_spi_p, w5100z, gateway_address_3, w5100_gateway[0]);
-                eth_write_register(MB1_spi_p, w5100z, gateway_address_2, w5100_gateway[1]);
-                eth_write_register(MB1_spi_p, w5100z, gateway_address_1, w5100_gateway[2]);
-                eth_write_register(MB1_spi_p, w5100z, gateway_address_0, w5100_gateway[3]);
+    /* Set default gateway */
+    HA_NOTIFY("\nSetting default gateway...\n");
+            eth_write_register(MB1_spi_p, w5100z, gateway_address_3, w5100_gateway[0]);
+            eth_write_register(MB1_spi_p, w5100z, gateway_address_2, w5100_gateway[1]);
+            eth_write_register(MB1_spi_p, w5100z, gateway_address_1, w5100_gateway[2]);
+            eth_write_register(MB1_spi_p, w5100z, gateway_address_0, w5100_gateway[3]);
 
-        /* Read back default gateway */
-        HA_NOTIFY("\nDefault gateway: %u.%u.%u.%u.\n",
-                eth_read_register(MB1_spi_p, w5100z, gateway_address_3),
-                eth_read_register(MB1_spi_p, w5100z, gateway_address_2),
-                eth_read_register(MB1_spi_p, w5100z, gateway_address_1),
-                eth_read_register(MB1_spi_p, w5100z, gateway_address_0));
+    /* Read back default gateway */
+    HA_NOTIFY("Default gateway: %u.%u.%u.%u.\n",
+            eth_read_register(MB1_spi_p, w5100z, gateway_address_3),
+            eth_read_register(MB1_spi_p, w5100z, gateway_address_2),
+            eth_read_register(MB1_spi_p, w5100z, gateway_address_1),
+            eth_read_register(MB1_spi_p, w5100z, gateway_address_0));
 
-        testing_delay_us(1000000);
+    testing_delay_us(1000000);
 
-        /* Wait for ping or esc */
-        HA_NOTIFY("\nConnect Ethernet EB to a computer and try to ping the EB from computer.\n"
-                "Press ESC to escape.\n");
+    /* Wait for ping or esc */
+    HA_NOTIFY("\nConnect Ethernet EB to a computer and try to ping the EB from computer.\n"
+            "Press ESC to escape.\n");
 
-        /* poll the esc_pressed */
-        if (esc_pressed == true) {
-            break;
-        }
+    /* poll the esc_pressed */
+    while (esc_pressed != true) {
+        ;
     }
 
     stop_waiting_esc_character();
@@ -462,7 +460,7 @@ void eth_write_register(SPI *spi_p, uint16_t spi_dev_id, uint16_t addr, uint8_t 
     spi_p->SM_device_select(spi_dev_id);
 
     /* Send data to W5100 */
-    spi_p->M2F_sendAndGet_blocking(spi_dev_id, read_op);
+    spi_p->M2F_sendAndGet_blocking(spi_dev_id, write_op);
     spi_p->M2F_sendAndGet_blocking(spi_dev_id, (uint8_t)(addr >> 8));
     spi_p->M2F_sendAndGet_blocking(spi_dev_id, (uint8_t)addr);
     spi_p->M2F_sendAndGet_blocking(spi_dev_id, value);
