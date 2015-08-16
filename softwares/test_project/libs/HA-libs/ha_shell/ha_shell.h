@@ -34,7 +34,6 @@ extern "C" {
 #include "eth_testing_cmds.h"
 #include "rs485_testing_cmds.h"
 #include "led7seg_testing_cmds.h"
->>>>>>> ed0dcfba4a35d7b09b323690f8350075ac8cb173
 #endif
 
 namespace ha_ns {
