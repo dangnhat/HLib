@@ -81,7 +81,7 @@ public:
      *
      * @param[in] adc_params A structure contains all user info about ADC.
      */
-    void adc_init(adc_ns::adc_params_t *adc_params);
+    void adc_init(const adc_ns::adc_params_t *adc_params);
 
     /**
      * @brief Start ADC.
