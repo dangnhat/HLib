@@ -70,7 +70,8 @@ const shell_command_t shell_commands[] = {
     {"eth_test", "ETH EB testing command", eth_test},
     {"rs485_test", "RS485 EB testing command", rs485_test},
     {"led7seg_test", "LED7SEG EB testing command", led7seg_test},
-    {"spieb_test", "LED7SEG EB testing command", spieb_test},
+    {"spieb_test", "SPI EB testing command", spieb_test},
+    {"adceb_test", "ADC EB testing command", adceb_test},
 #endif
     {NULL, NULL, NULL}
 };
