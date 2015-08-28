@@ -23,4 +23,6 @@
 #define HA_DEBUG(...)
 #endif
 
+#define HA_FLUSH_STDOUT()  fflush(stdout)
+
 #endif /* HA_DEBUG_H_ */
