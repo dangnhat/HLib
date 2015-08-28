@@ -91,6 +91,27 @@ enum dpot_pot_select_e: uint8_t {
     dpot_pot1_select = 0x02, /* Don't care in case of MCP41XXX */
 };
 
+static const adc_ns::adc_params_t dpot_adc_params = {
+    adc_ns::independent,
+    adc_ns::adc1,
+    10,
+    adc_ns::continuous_mode,
+    adc_ns::regular_channel,
+    adc_ns::no_option,
+    ADC_SampleTime_28Cycles5,
+    adc_ns::poll,
+};
+
+static const gpio_ns::gpio_params_t dpot_adc_gpio_params = {
+    gpio_ns::port_C,
+    0,
+    gpio_ns::in_analog,
+    gpio_ns::speed_50MHz,
+};
+
+/* Temperature sensor (TMP121/TMP122) data */
+const float resolution_step = 0.0625; /* oC */
+
 /* End configuration data */
 
 /* Shell command usages */
@@ -134,6 +155,11 @@ static void spieb_eeprom_communication_test(void);
  *          Use VOM to measure changes of voltage on pin W.
  */
 static void spieb_digital_potentiometer_test(void);
+
+/**
+ * @brief   MBoard-1 and TMP121/TMP122 communication test.
+ */
+static void spieb_tmpic_test(void);
 
 /**
  * @brief   Full test. This includes initialization, communication test and warm reset test.
@@ -218,6 +244,11 @@ void spieb_test(int argc, char **argv)
                 case 'r':
                     /* Digital potentiometer communication test */
                     spieb_digital_potentiometer_test();
+                    break;
+
+                case 't':
+                    /* Temperature communication test */
+                    spieb_tmpic_test();
                     break;
 
                 case 'f':
@@ -443,7 +474,9 @@ static void eeprom_write_status(SPI *spi_p, const uint16_t spi_dev_id, const uin
 static void spieb_digital_potentiometer_test(void)
 {
     uint16_t d = 0;
-    float vdd = 3.3;
+    uint16_t vdd = 3300;
+    adc w_adc;
+    gpio adc_gpio;
 
     start_waiting_esc_character();
 
@@ -453,15 +486,21 @@ static void spieb_digital_potentiometer_test(void)
     /* Attach */
     MB1_spi_p->SM_device_attach(dpot);
 
-    HA_NOTIFY("Connect A to 3V3 and B to GND.\n"
+    /* Init ADC and GPIO for ADC */
+    w_adc.adc_init(&dpot_adc_params);
+    w_adc.adc_start();
+    adc_gpio.gpio_init(&dpot_adc_gpio_params);
+
+    HA_NOTIFY("Connect A to 3V3, B to GND, and W to ADC in10 on P1.\n"
             "Press ESC to continue.\n");
     while (esc_pressed == false);
     stop_waiting_esc_character();
     start_waiting_esc_character();
+
     HA_NOTIFY("\nDn:\tVw(mV):\n");
 
     while (1) {
-        HA_NOTIFY("\r%3u\t%4u", d, (unsigned int)( (((float)d)/256) * vdd * 1000 ));
+        HA_NOTIFY("\r%-4u\t%-4u", d, (unsigned int)( (float)w_adc.adc_convert()/4096 * vdd ));
         HA_FLUSH_STDOUT();
 
         dpot_send_command_and_data(MB1_spi_p, dpot, dpot_write_cmd, dpot_pot0_select, d);
@@ -471,7 +510,7 @@ static void spieb_digital_potentiometer_test(void)
             d = 0;
         }
 
-        testing_delay_us(500000);
+        testing_delay_us(200000);
 
         /* poll the esc_pressed */
         if (esc_pressed == true) {
@@ -480,6 +519,10 @@ static void spieb_digital_potentiometer_test(void)
     }
     /* Detach */
     MB1_spi_p->SM_device_release(dpot);
+
+    /* Deinit ADC and GPIO for ADC */
+    w_adc.adc_stop();
+    adc_gpio.gpio_shutdown();
 
     stop_waiting_esc_character();
     HA_NOTIFY("\nTest stopped.\n");
@@ -503,11 +546,54 @@ static void dpot_send_command_and_data(SPI *spi_p, const uint16_t spi_dev_id,
 }
 
 /*----------------------------------------------------------------------------*/
+static void spieb_tmpic_test(void)
+{
+    int16_t d = 0;
+
+    start_waiting_esc_character();
+
+    HA_NOTIFY("\n*** SPI temperature sensor (TMP121/122) & MBOARD COMMUNICAION TEST ***\n"
+                "(press ESC to quit).\n");
+
+    /* Attach */
+    MB1_spi_p->SM_device_attach(tmp);
+
+    HA_NOTIFY("\n16b data(hex):\tT(oC):\n");
+
+    while (1) {
+        /* Get temperature */
+        MB1_spi_p->SM_device_select(tmp);
+        d = MB1_spi_p->M2F_sendAndGet_blocking(tmp, 0x00);
+        d = (d << 8) | MB1_spi_p->M2F_sendAndGet_blocking(tmp, 0x00);
+        MB1_spi_p->SM_device_deselect(tmp);
+
+        HA_NOTIFY("\r%-4x\t\t%-4u", d, (uint16_t)((float)(d >> 3) * 0.0625 ) );
+        HA_FLUSH_STDOUT();
+
+        testing_delay_us(1000000);
+
+        /* poll the esc_pressed */
+        if (esc_pressed == true) {
+            break;
+        }
+    }
+    /* Detach */
+    MB1_spi_p->SM_device_release(tmp);
+
+    stop_waiting_esc_character();
+    HA_NOTIFY("\nTest stopped.\n");
+}
+
+/*----------------------------------------------------------------------------*/
 static void spieb_full_test(void)
 {
     spieb_testing_init();
 
     spieb_eeprom_communication_test();
+
+    spieb_digital_potentiometer_test();
+
+    spieb_tmpic_test();
 
     spieb_testing_deinit();
 }
