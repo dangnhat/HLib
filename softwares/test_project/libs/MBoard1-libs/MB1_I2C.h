@@ -20,27 +20,40 @@ public:
     /**
      * @brief
      */
-    I2C (uint8_t used_i2c);
+    I2C(uint8_t used_i2c);
 
     /**
      * @brief
      */
-    void reinit (I2C_InitTypeDef *init_structure);
+    void reinit(I2C_InitTypeDef *init_structure);
 
     /**
      * @brief
      */
-    void deinit (void);
+    void deinit(void);
+
+    /**
+     *
+     */
+    uint8_t get_used_i2c(void);
 
     /**
      * @brief
      */
-    void master_send_to (uint16_t slave_addr, uint8_t *send_buff, uint16_t size, bool stop_signal);
+    bool master_send_to(uint16_t slave_7b_addr, uint8_t *send_buff, uint16_t size,
+            bool stop_signal);
 
     /**
      * @brief
      */
-    void master_receive_from (uint16_t slave_addr, uint8_t *recv_buff, uint16_t size);
+    bool master_receive_from(uint16_t slave_7b_addr, uint8_t *recv_buff,
+            uint16_t size);
+
+    /**
+     * @brief
+     */
+    bool master_receive_from(uint16_t slave_7b_addr, uint8_t slave_register,
+            uint8_t *recv_buff, uint16_t size);
 private:
     uint8_t used_i2c = 1; //I2C1 as default
 };

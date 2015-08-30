@@ -4,7 +4,10 @@
  *  Created on: Aug 25, 2015
  *      Author: nvhien1992
  */
+#include <stdio.h>
 #include "MB1_I2C.h"
+
+#define COUNT_TIME_OUT (1000)
 
 using namespace I2C_ns;
 
@@ -25,92 +28,255 @@ I2C::I2C(uint8_t usued_i2c)
 
 void I2C::reinit(I2C_InitTypeDef *init_structure)
 {
-    /* enable I2C */
-    I2C_Cmd(I2Cs[this->used_i2c], ENABLE);
-
     /* I2C clock enable */
-    RCC_APB1PeriphClockCmd(RCC_I2Cs[this->used_i2c], ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_I2Cs[this->used_i2c - 1], ENABLE);
 
-    /* I2C1 SDA and SCL configuration */
+    /* GPIOB clock enable */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+
+    /* I2C SDA and SCL configuration */
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = SDA_pins[this->used_i2c]
-            | SCL_pins[this->used_i2c];
+    GPIO_InitStructure.GPIO_Pin = SDA_pins[this->used_i2c - 1]
+            | SCL_pins[this->used_i2c - 1];
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-    I2C_Init(I2Cs[this->used_i2c], init_structure);
+    I2C_InitTypeDef I2C_InitStructure;
+    I2C_InitStructure.I2C_ClockSpeed = init_structure->I2C_ClockSpeed;
+    I2C_InitStructure.I2C_Mode = init_structure->I2C_Mode;
+    I2C_InitStructure.I2C_DutyCycle = init_structure->I2C_DutyCycle;
+    I2C_InitStructure.I2C_Ack = init_structure->I2C_Ack;
+    I2C_InitStructure.I2C_AcknowledgedAddress =
+            init_structure->I2C_AcknowledgedAddress;
+    I2C_InitStructure.I2C_OwnAddress1 = init_structure->I2C_OwnAddress1;
+    I2C_Init(I2Cs[this->used_i2c - 1], &I2C_InitStructure);
+
+    /* enable I2C */
+    I2C_Cmd(I2Cs[this->used_i2c - 1], ENABLE);
+}
+
+uint8_t I2C::get_used_i2c(void)
+{
+    return this->used_i2c;
 }
 
 void I2C::deinit(void)
 {
+    GPIO_InitTypeDef GPIO_InitStruct;
 
+    /* disable I2C */
+    I2C_Cmd(I2Cs[this->used_i2c], DISABLE);
+
+    /* disable clock */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, DISABLE);
+    RCC_APB1PeriphClockCmd(RCC_I2Cs[this->used_i2c], DISABLE);
+
+    /* config IO pins into IN_FLOATING mode */
+    GPIO_InitStruct.GPIO_Pin = SCL_pins[this->used_i2c]
+            | SDA_pins[this->used_i2c];
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
-void I2C::master_send_to(uint16_t slave_addr, uint8_t *send_buff, uint16_t size,
-        bool stop_signal)
+bool I2C::master_send_to(uint16_t slave_7b_addr, uint8_t *send_buff,
+        uint16_t size, bool stop_signal)
 {
+    uint16_t waiting_time_count = COUNT_TIME_OUT;
+
     /* generate start signal */
-    I2C_GenerateSTART(I2Cs[this->used_i2c], ENABLE);
-    /* check start bit flag */
-    while (I2C_GetFlagStatus(I2Cs[this->used_i2c], I2C_FLAG_SB) == RESET);
+    I2C_GenerateSTART(I2Cs[this->used_i2c - 1], ENABLE);
+    /* check start bit flag (EV5) */
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_MODE_SELECT)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
 
     /* send slave address with write command */
-    I2C_Send7bitAddress(I2Cs[this->used_i2c], slave_addr << 1,
-    I2C_Direction_Transmitter);
-    /* check master is now in Tx mode */
-    while (I2C_CheckEvent(I2Cs[this->used_i2c],
-    I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) == ERROR);
+    I2C_Send7bitAddress(I2Cs[this->used_i2c - 1],
+            ((uint8_t) slave_7b_addr) << 1,
+            I2C_Direction_Transmitter);
+
+    /* check master is now in Tx mode (EV6) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
 
     for (uint16_t i = 0; i < size; i++) {
         /* send data */
-        I2C_SendData(I2Cs[this->used_i2c], send_buff[i]);
-        /* wait for byte send to complete */
-        while (I2C_CheckEvent(I2Cs[this->used_i2c],
-        I2C_EVENT_MASTER_BYTE_TRANSMITTED) == ERROR);
+        I2C_SendData(I2Cs[this->used_i2c - 1], send_buff[i]);
+        /* wait for byte shifted completely (EV8) */
+        waiting_time_count = COUNT_TIME_OUT;
+        while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+        I2C_EVENT_MASTER_BYTE_TRANSMITTING)) {
+            if ((waiting_time_count--) == 0) {
+                return false;
+            }
+        }
+    }
+
+    /* check sending is complete (EV8_2) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_BYTE_TRANSMITTED)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
     }
 
     if (stop_signal) {
         /* generate stop signal */
-        I2C_GenerateSTOP(I2Cs[this->used_i2c], ENABLE);
-        /* check stop bit flag */
-        while (I2C_GetFlagStatus(I2Cs[this->used_i2c], I2C_FLAG_STOPF) == SET);
+        I2C_GenerateSTOP(I2Cs[this->used_i2c - 1], ENABLE);
     }
+
+    return true;
 }
 
-void I2C::master_receive_from(uint16_t slave_addr, uint8_t *recv_buff,
+bool I2C::master_receive_from(uint16_t slave_7b_addr, uint8_t *recv_buff,
         uint16_t size)
 {
+    uint16_t waiting_time_count = COUNT_TIME_OUT;
+
     /* re-enable ACK bit disabled in last call */
-    I2C_AcknowledgeConfig(I2Cs[this->used_i2c], ENABLE);
-    /* check BUSY Flag */
-    while (I2C_GetFlagStatus(I2Cs[this->used_i2c], I2C_FLAG_BUSY) == SET);
+    I2C_AcknowledgeConfig(I2Cs[this->used_i2c - 1], ENABLE);
 
     /* generate START signal a second time (Re-Start) */
-    I2C_GenerateSTART(I2Cs[this->used_i2c], ENABLE);
-    /* check start bit flag */
-    while (I2C_GetFlagStatus(I2Cs[this->used_i2c], I2C_FLAG_SB) == RESET);
+    I2C_GenerateSTART(I2Cs[this->used_i2c - 1], ENABLE);
+    /* check start bit flag (EV5) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_MODE_SELECT)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
 
     /* send address for read */
-    I2C_Send7bitAddress(I2Cs[this->used_i2c], slave_addr << 1,
+    I2C_Send7bitAddress(I2Cs[this->used_i2c - 1],
+            ((uint8_t) slave_7b_addr) << 1,
             I2C_Direction_Receiver);
-    /* check receive mode Flag */
-    while (I2C_CheckEvent(I2Cs[this->used_i2c],
-            I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED) == ERROR);
+    /* check master is now in Rx mode (EV6) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
 
-    for(uint16_t i = 0; i < size; i++) {
+    for (uint16_t i = 0; i < size; i++) {
         /* receive all registers */
-        while (I2C_CheckEvent(I2Cs[this->used_i2c], I2C_EVENT_MASTER_BYTE_RECEIVED)
-                == ERROR);
-        recv_buff[i] = I2C_ReceiveData(I2Cs[this->used_i2c]);
+        waiting_time_count = COUNT_TIME_OUT;
+        while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+        I2C_EVENT_MASTER_BYTE_RECEIVED)) {
+            if ((waiting_time_count--) == 0) {
+                return false;
+            }
+        }
+        recv_buff[i] = I2C_ReceiveData(I2Cs[this->used_i2c - 1]);
     }
 
     /* enable NACK bit */
-    I2C_NACKPositionConfig(I2Cs[this->used_i2c], I2C_NACKPosition_Current);
-    I2C_AcknowledgeConfig(I2Cs[this->used_i2c], DISABLE);
+    I2C_NACKPositionConfig(I2Cs[this->used_i2c - 1], I2C_NACKPosition_Current);
+    I2C_AcknowledgeConfig(I2Cs[this->used_i2c - 1], DISABLE);
 
     /* generate STOP signal */
-    I2C_GenerateSTOP(I2Cs[this->used_i2c], ENABLE);
-    /* check stop bit flag */
-    while (I2C_GetFlagStatus(I2Cs[this->used_i2c], I2C_FLAG_STOPF) == SET);
+    I2C_GenerateSTOP(I2Cs[this->used_i2c - 1], ENABLE);
+
+    return true;
+}
+
+bool I2C::master_receive_from(uint16_t slave_7b_addr, uint8_t slave_register,
+        uint8_t *recv_buff, uint16_t size)
+{
+    uint16_t waiting_time_count = COUNT_TIME_OUT;
+
+    /* generate start signal */
+    I2C_GenerateSTART(I2Cs[this->used_i2c - 1], ENABLE);
+    /* check start bit flag (EV5) */
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_MODE_SELECT)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
+
+    /* send slave address with write command */
+    I2C_Send7bitAddress(I2Cs[this->used_i2c - 1],
+            ((uint8_t) slave_7b_addr) << 1,
+            I2C_Direction_Transmitter);
+    /* check master is now in Tx mode (EV6) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
+
+    /* set slave internal register */
+    I2C_SendData(I2Cs[this->used_i2c - 1], slave_register);
+    /* wait for byte shifted completely (EV8) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_BYTE_TRANSMITTED)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
+
+    /* re-enable ACK bit disabled in last call */
+    I2C_AcknowledgeConfig(I2Cs[this->used_i2c - 1], ENABLE);
+
+    /* generate START signal a second time (Re-Start) */
+    I2C_GenerateSTART(I2Cs[this->used_i2c - 1], ENABLE);
+    /* check start bit flag (EV5) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_MODE_SELECT)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
+
+    /* send address for read */
+    I2C_Send7bitAddress(I2Cs[this->used_i2c - 1],
+            ((uint8_t) slave_7b_addr) << 1,
+            I2C_Direction_Receiver);
+    /* check master is now in Rx mode (EV6) */
+    waiting_time_count = COUNT_TIME_OUT;
+    while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+    I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED)) {
+        if ((waiting_time_count--) == 0) {
+            return false;
+        }
+    }
+
+    for (uint16_t i = 0; i < size; i++) {
+        /* receive all registers */
+        waiting_time_count = COUNT_TIME_OUT;
+        while (!I2C_CheckEvent(I2Cs[this->used_i2c - 1],
+        I2C_EVENT_MASTER_BYTE_RECEIVED)) {
+            if ((waiting_time_count--) == 0) {
+                return false;
+            }
+        }
+        recv_buff[i] = I2C_ReceiveData(I2Cs[this->used_i2c - 1]);
+    }
+
+    /* enable NACK bit */
+    I2C_NACKPositionConfig(I2Cs[this->used_i2c - 1], I2C_NACKPosition_Current);
+    I2C_AcknowledgeConfig(I2Cs[this->used_i2c - 1], DISABLE);
+
+    /* generate STOP signal */
+    I2C_GenerateSTOP(I2Cs[this->used_i2c - 1], ENABLE);
+
+    return true;
 }
