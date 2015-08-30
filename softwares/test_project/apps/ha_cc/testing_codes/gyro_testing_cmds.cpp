@@ -24,19 +24,17 @@ static void gyro_testing_deinit(void);
 
 static void gyro_testing_AD0(void);
 
-static void gyro_write_read_test(uint8_t addr);
+static void gyro_read_test(uint8_t addr);
 
 static void gyro_full_test(void);
 
 static i2c *MB1_i2c_p = &MB1_I2C2;
 
-static I2C_InitTypeDef i2c_init_structure = {
-MPU6050_I2C_Speed,
-I2C_Mode_I2C,
-I2C_DutyCycle_2,
-MPU6050_DEFAULT_ADDRESS << 1, // MPU6050 7-bit address = 0x68, 8-bit address = 0xD0;
-I2C_Ack_Enable,
-I2C_AcknowledgedAddress_7bit };
+static i2c_ns::i2c_params_t i2c_params = {
+MPU6050_I2C_Speed, i2c_ns::i2c, i2c_ns::dc_2, i2c_ns::ack_enable,
+        i2c_ns::acked_address_7bit,
+        MPU6050_DEFAULT_ADDRESS << 1, // BMP180 7-bit adress = 0x77, 8-bit address = 0xEE;
+        };
 
 static gpio addr_ctrl;
 static const gpio_ns::gpio_params_t addr_ctrl_params = { gpio_ns::port_A, 15,
@@ -47,14 +45,15 @@ static const gpio_ns::gpio_params_t gyro_int_params = { gpio_ns::port_B, 3,
         gpio_ns::in_pull_down, gpio_ns::speed_2MHz, };
 
 /* Shell command usages */
-static const char gyro_test_usage[] = "Usage:\n"
-        "gyro_test -i, initialize hardware and data for the test.\n"
-        "gyro_test -d, de-initialize hardware and data for the test.\n"
-        "gyro_test -a, choose slave address using AD0 pin.\n"
-        "gyro_test -g, write/read register of gyroscope sensor with default address.\n"
-        "gyro_test -f, perform full test = gyro_test -i -a.\n"
-        "gyro_test -h, print the usage.\n"
-        "Press ESC to stop the test.\n";
+static const char gyro_test_usage[] =
+        "Usage:\n"
+                "gyro_test -i, initialize hardware and data for the test.\n"
+                "gyro_test -d, de-initialize hardware and data for the test.\n"
+                "gyro_test -a, choose slave address using AD0 pin.\n"
+                "gyro_test -g, write/read register of gyroscope sensor with default address.\n"
+                "gyro_test -f, perform full test = gyro_test -i -a.\n"
+                "gyro_test -h, print the usage.\n"
+                "Press ESC to stop the test.\n";
 
 void gyro_test(int argc, char** argv)
 {
@@ -84,7 +83,7 @@ void gyro_test(int argc, char** argv)
                 case 'g':
                     addr_ctrl.gpio_reset();
                     /* Write/Read register test*/
-                    gyro_write_read_test(MPU6050_DEFAULT_ADDRESS);
+                    gyro_read_test(MPU6050_DEFAULT_ADDRESS);
                     break;
 
                 case 'f':
@@ -112,7 +111,7 @@ static void gyro_testing_init(void)
     HA_NOTIFY("\n*** Initializing hardware for MPU6050 tests ***\n"
             "\tInitialize: I2C%u, AD0 pin.\n", MB1_i2c_p->get_used_i2c());
 
-    MB1_i2c_p->init(&i2c_init_structure);
+    MB1_i2c_p->init(&i2c_params);
     addr_ctrl.gpio_init(&addr_ctrl_params);
     gyro_int.gpio_init(&gyro_int_params);
 }
@@ -133,31 +132,21 @@ static void gyro_testing_AD0(void)
 
     HA_NOTIFY("\n[1] Choose address 0x68 using AD0 pin and test write/read:\n");
     addr_ctrl.gpio_reset();
-    gyro_write_read_test(MPU6050_DEFAULT_ADDRESS);
+    gyro_read_test(MPU6050_DEFAULT_ADDRESS);
 
     HA_NOTIFY("\n[2] Choose address 0x69 using AD0 pin and test write/read:\n");
     addr_ctrl.gpio_set();
-    gyro_write_read_test(MPU6050__ADDRESS_AD0_HIGH);
+    gyro_read_test(MPU6050__ADDRESS_AD0_HIGH);
 }
 
-static void gyro_write_read_test(uint8_t addr)
+static void gyro_read_test(uint8_t addr)
 {
-    uint8_t gyro_config[2] = { 0x1B, 0x18 };
-    HA_NOTIFY("\n*** Test wr/rd register at address: 0x%x with data 0x%x ***\n",
-            gyro_config[0], gyro_config[1]);
-    if (!MB1_i2c_p->master_send(addr, gyro_config, 2,
-            true)) {
-        HA_NOTIFY("\t[ERR] Write fail!\n");
-        return;
-    }
+    uint8_t wai_reg = 0x75;
+    HA_NOTIFY("\n*** Read register Who Am I: 0x%x ***\n", wai_reg);
 
     uint8_t reg_readback = 0;
-    if (!MB1_i2c_p->master_receive(addr, gyro_config[0],
-            &reg_readback, 1)) {
-        HA_NOTIFY("\t[ERR] Read fail!\n");
-        return;
-    }
-    HA_NOTIFY("\tRegister readback: 0x%x\n", reg_readback);
+    MB1_i2c_p->master_receive(addr, wai_reg, &reg_readback, 1);
+    HA_NOTIFY("\tWho Am I: 0x%x\n", reg_readback);
 }
 
 static void gyro_full_test(void)

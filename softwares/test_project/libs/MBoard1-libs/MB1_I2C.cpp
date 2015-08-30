@@ -21,11 +21,11 @@ static void (* rcc_i2c_fp[num_of_i2cs]) (uint32_t, FunctionalState)
 
 /* I2C gpios */
 static GPIO_TypeDef* SDA_ports[num_of_i2cs] = {GPIOB, GPIOB};
-static const uint16_t SDA_pins[num_of_i2cs] = {GPIO_Pin_9, GPIO_Pin_11};
+static const uint16_t SDA_pins[num_of_i2cs] = {GPIO_Pin_7, GPIO_Pin_11};
 static const uint32_t SDA_RCCs [num_of_i2cs] ={RCC_APB2Periph_GPIOB, RCC_APB2Periph_GPIOB};
 
 static GPIO_TypeDef* SCL_ports[num_of_i2cs] = {GPIOB, GPIOB };
-static const uint16_t SCL_pins[num_of_i2cs] = {GPIO_Pin_8, GPIO_Pin_10};
+static const uint16_t SCL_pins[num_of_i2cs] = {GPIO_Pin_6, GPIO_Pin_10};
 static const uint32_t SCL_RCCs [num_of_i2cs] ={RCC_APB2Periph_GPIOB, RCC_APB2Periph_GPIOB};
 
 /*----------------------------------------------------------------------------*/

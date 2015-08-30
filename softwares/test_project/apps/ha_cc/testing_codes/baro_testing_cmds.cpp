@@ -27,13 +27,14 @@ static void baro_full_test(void);
 
 static i2c *MB1_i2c_p = &MB1_I2C2;
 
-static I2C_InitTypeDef i2c_init_structure = {
+static i2c_ns::i2c_params_t i2c_params = {
 BMP180_I2C_Speed,
-I2C_Mode_I2C,
-I2C_DutyCycle_2,
+i2c_ns::i2c,
+i2c_ns::dc_2,
+i2c_ns::ack_enable,
+i2c_ns::acked_address_7bit,
 BMP180_ADDRESS << 1, // BMP180 7-bit adress = 0x77, 8-bit address = 0xEE;
-I2C_Ack_Enable,
-I2C_AcknowledgedAddress_7bit };
+};
 
 /* Shell command usages */
 static const char baro_test_usage[] = "Usage:\n"
@@ -95,7 +96,7 @@ static void baro_testing_init(void)
     HA_NOTIFY("\n*** Initializing hardware for BMP180 tests ***\n"
             "\tInitialize I2C%u.\n", MB1_i2c_p->get_used_i2c());
 
-    MB1_i2c_p->init(&i2c_init_structure);
+    MB1_i2c_p->init(&i2c_params);
 }
 
 static void baro_testing_deinit(void)
@@ -113,11 +114,8 @@ static void baro_write_read_test(void)
             baro_eeprom_reg);
 
     uint8_t reg_readback[2] = { 0, 0 };
-    if (!MB1_i2c_p->master_receive(BMP180_ADDRESS, baro_eeprom_reg,
-            reg_readback, 2)) {
-        HA_NOTIFY("\t[ERR] Read fail!\n");
-        return;
-    }
+    MB1_i2c_p->master_receive(BMP180_ADDRESS, baro_eeprom_reg,
+            reg_readback, 2);
     HA_NOTIFY("\tData readback at 0xF6: 0x%x, at 0xF7: 0x%x\n", reg_readback[0],
             reg_readback[1]);
 }
