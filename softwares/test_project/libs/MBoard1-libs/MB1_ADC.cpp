@@ -21,7 +21,7 @@ adc::adc(void)
     this->adc_num = 0;
 }
 
-void adc::adc_init(adc_params_t *adc_params)
+void adc::adc_init(const adc_params_t *adc_params)
 {
     ADC_InitTypeDef adc_init_struct;
 
@@ -119,8 +119,6 @@ uint16_t adc::adc_convert(void)
 {
     uint16_t adc_converted_value;
 
-    adc_start();
-
     /* Start conversation */
     ADC_SoftwareStartConvCmd(adc_x[this->adc_num], ENABLE);
     if (poll_data) {
@@ -130,8 +128,6 @@ uint16_t adc::adc_convert(void)
         adc_converted_value = ADC_GetConversionValue(adc_x[this->adc_num]);
         ADC_ClearFlag(adc_x[this->adc_num], ADC_FLAG_EOC);
     }
-
-    adc_stop();
 
     return adc_converted_value;
 }
