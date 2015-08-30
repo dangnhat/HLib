@@ -39,8 +39,8 @@ extern SPI MB1_SPI1;
 extern SPI MB1_SPI2;
 
 /**< I2Cs */
-extern I2C MB1_I2C1;
-extern I2C MB1_I2C2;
+extern i2c MB1_I2C1;
+extern i2c MB1_I2C2;
 
 /**< LEDs */
 extern Led MB1_Led_red;

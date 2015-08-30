@@ -25,7 +25,7 @@ static void baro_write_read_test(void);
 
 static void baro_full_test(void);
 
-static I2C *MB1_i2c_p = &MB1_I2C2;
+static i2c *MB1_i2c_p = &MB1_I2C2;
 
 static I2C_InitTypeDef i2c_init_structure = {
 BMP180_I2C_Speed,
@@ -95,7 +95,7 @@ static void baro_testing_init(void)
     HA_NOTIFY("\n*** Initializing hardware for BMP180 tests ***\n"
             "\tInitialize I2C%u.\n", MB1_i2c_p->get_used_i2c());
 
-    MB1_i2c_p->reinit(&i2c_init_structure);
+    MB1_i2c_p->init(&i2c_init_structure);
 }
 
 static void baro_testing_deinit(void)
@@ -113,7 +113,7 @@ static void baro_write_read_test(void)
             baro_eeprom_reg);
 
     uint8_t reg_readback[2] = { 0, 0 };
-    if (!MB1_i2c_p->master_receive_from(BMP180_ADDRESS, baro_eeprom_reg,
+    if (!MB1_i2c_p->master_receive(BMP180_ADDRESS, baro_eeprom_reg,
             reg_readback, 2)) {
         HA_NOTIFY("\t[ERR] Read fail!\n");
         return;

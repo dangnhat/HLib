@@ -28,7 +28,7 @@ static void gyro_write_read_test(uint8_t addr);
 
 static void gyro_full_test(void);
 
-static I2C *MB1_i2c_p = &MB1_I2C2;
+static i2c *MB1_i2c_p = &MB1_I2C2;
 
 static I2C_InitTypeDef i2c_init_structure = {
 MPU6050_I2C_Speed,
@@ -112,7 +112,7 @@ static void gyro_testing_init(void)
     HA_NOTIFY("\n*** Initializing hardware for MPU6050 tests ***\n"
             "\tInitialize: I2C%u, AD0 pin.\n", MB1_i2c_p->get_used_i2c());
 
-    MB1_i2c_p->reinit(&i2c_init_structure);
+    MB1_i2c_p->init(&i2c_init_structure);
     addr_ctrl.gpio_init(&addr_ctrl_params);
     gyro_int.gpio_init(&gyro_int_params);
 }
@@ -145,14 +145,14 @@ static void gyro_write_read_test(uint8_t addr)
     uint8_t gyro_config[2] = { 0x1B, 0x18 };
     HA_NOTIFY("\n*** Test wr/rd register at address: 0x%x with data 0x%x ***\n",
             gyro_config[0], gyro_config[1]);
-    if (!MB1_i2c_p->master_send_to(addr, gyro_config, 2,
+    if (!MB1_i2c_p->master_send(addr, gyro_config, 2,
             true)) {
         HA_NOTIFY("\t[ERR] Write fail!\n");
         return;
     }
 
     uint8_t reg_readback = 0;
-    if (!MB1_i2c_p->master_receive_from(addr, gyro_config[0],
+    if (!MB1_i2c_p->master_receive(addr, gyro_config[0],
             &reg_readback, 1)) {
         HA_NOTIFY("\t[ERR] Read fail!\n");
         return;

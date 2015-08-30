@@ -61,8 +61,8 @@ SPI MB1_SPI1(1);
 SPI MB1_SPI2(2);
 
 /**< I2Cs */
-I2C MB1_I2C1(1);
-I2C MB1_I2C2(2);
+i2c MB1_I2C1(1);
+i2c MB1_I2C2(2);
 
 /**< LEDs */
 Led MB1_Led_green(Led_ns::green);
@@ -125,7 +125,7 @@ const uint8_t MB1_conf_USART2_retarget = USART_stdStream_stdout;
 /**< for USART2 */
 
 /**< for USART3 */					//used by ANH
-const bool MB1_USART3_isUsed = true;
+const bool MB1_USART3_isUsed = false;
 const uint32_t MB1_conf_USART3_buadrate = 9600;
 const bool MB1_conf_USART3_retarget_isUsed = false;
 const uint8_t MB1_conf_USART3_retarget = USART_stdStream_stdout;
@@ -193,12 +193,12 @@ void MB1_system_init(void)
 
     /**< end USART2 */
 
-    /**< USART3 */			//used by ANH
-//    if (MB1_USART3_isUsed) {
-//        MB1_USART3.Restart(MB1_conf_USART3_buadrate);
-//        if (MB1_conf_USART3_retarget_isUsed)
-//            MB1_USART3.Retarget(USART_stdStream_stdout);
-//    }
+    /**< USART3 */
+    if (MB1_USART3_isUsed) {
+        MB1_USART3.Restart(MB1_conf_USART3_buadrate);
+        if (MB1_conf_USART3_retarget_isUsed)
+            MB1_USART3.Retarget(USART_stdStream_stdout);
+    }
     /**< end USART3 */
 
     /**< ISRs */
