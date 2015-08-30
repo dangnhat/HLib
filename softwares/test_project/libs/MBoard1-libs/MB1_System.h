@@ -17,6 +17,7 @@
 #include "MB1_Misc.h"
 #include "MB1_ISR.h"
 #include "MB1_SPI.h"
+#include "MB1_I2C.h"
 #include "MB1_Buttons.h"
 #include "MB1_CRC.h"
 #include "MB1_GPIO.h"
@@ -36,6 +37,10 @@ extern adc MB1_ADC1_IN16; //Internal temperature sensor.
 /**< SPIs */
 extern SPI MB1_SPI1;
 extern SPI MB1_SPI2;
+
+/**< I2Cs */
+extern I2C MB1_I2C1;
+extern I2C MB1_I2C2;
 
 /**< LEDs */
 extern Led MB1_Led_red;
