@@ -37,6 +37,7 @@ extern "C" {
 #include "gyro_testing_cmds.h"
 #include "baro_testing_cmds.h"
 #include "spieb_testing_cmds.h"
+#include "i2ceb_testing_cmds.h"
 #include "adceb_testing_cmds.h"
 #endif
 
