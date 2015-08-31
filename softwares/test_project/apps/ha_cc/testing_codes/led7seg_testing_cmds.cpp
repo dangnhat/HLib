@@ -107,12 +107,9 @@ static const bool data_set_value = 1;
 const char led7seg_test_usage[] = "Usage:\n"
         "led7seg_test -i, initialize hardware and data for the test.\n"
 		"led7seg_test -d, deinitialize hardware and data for the test.\n"
-		"led7seg_test -1, test led7seg 1.\n"
-		"led7seg_test -2, test led7seg 2.\n"
-		"led7seg_test -3, test led7seg 3.\n"
-		"led7seg_test -4, test led7seg 4.\n"
+		"led7seg_test -a, test all led.\n"
 		"led7seg_test -s, test led7seg scan.\n"
-		"led7seg_test -f, perform full test = led7seg_test -i -1 -2 -3 -4 -s.\n"
+		"led7seg_test -f, perform full test = led7seg_test -i -a -s.\n"
 		"led7seg_test -h, print the usage.\n"
 		"Press ESC to stop the test.\n";
 /* Private function prototypes */
@@ -130,7 +127,7 @@ static void led7seg_testing_deinit(void);
  * Test LED7SEG one led.
  * led_number = 1 ~ 4.
  */
-static void led7seg_testing_lednumber(uint8_t lednumber);
+static void led7seg_testing_all(void);
 
 /*
  * Test Scan LED7SEG
@@ -153,6 +150,7 @@ static void led_data(uint8_t number, bool h);
  * Function led_number() choose LED7SEG.
  * led_number : 1 ~ 4.
  */
+#define all 0
 static void led_number(uint8_t lednumber);
 
 /* Public function implementations */
@@ -178,25 +176,11 @@ void led7seg_test(int argc, char **argv)
                 	led7seg_testing_deinit();
                     break;
 
-                case '1':
+                case 'a':
                     /* Test led7seg 1 */
-                	led7seg_testing_lednumber(1);
+                	led7seg_testing_all();
                     break;
 
-                case '2':
-                	/* Test led7seg 2 */
-                	led7seg_testing_lednumber(2);
-                    break;
-
-                case '3':
-                	/* Test led7seg 3 */
-                	led7seg_testing_lednumber(3);
-                    break;
-
-                case '4':
-                	/* Test led7seg 4 */
-                	led7seg_testing_lednumber(4);
-                    break;
                 case 's':
                 	/* Test led7seg scan */
                 	led7seg_testing_scan();
@@ -279,23 +263,17 @@ void led7seg_testing_deinit(void)
 }
 
 /*----------------------------------------------------------------------------*/
-void led7seg_testing_lednumber(uint8_t lednumber)
+void led7seg_testing_all(void)
 {
 	start_waiting_esc_character();
 
 	/* Configuration */
 	HA_NOTIFY("\n*** TEST LED7SEG %u ***\n"
-			  "(press ESC to quit).\n",lednumber);
-	led_number(lednumber);
-
+			  "(press ESC to quit).\n");
+	led_number(all);
+	led_data(8,0);
 	while(1)
 	{
-		for(int i = 0;i<10;i++){
-			led_data(i,0);
-			testing_delay_us(500000);
-			//led_data(i,1);
-			//testing_delay_us(500000);
-		}//End for()
 		/* poll the esc_pressed */
 		if (esc_pressed == true) {
 		    break;
@@ -334,10 +312,7 @@ void led7seg_testing_scan(void)
 void led7seg_full_test(void)
 {
 	led7seg_testing_init();
-	led7seg_testing_lednumber(1);
-	led7seg_testing_lednumber(2);
-	led7seg_testing_lednumber(3);
-	led7seg_testing_lednumber(4);
+	led7seg_testing_all();
 	led7seg_testing_scan();
 	led7seg_testing_deinit();
 }
@@ -451,7 +426,12 @@ void led_data(uint8_t number, bool h)
 void led_number(uint8_t lednumber)
 {
 	switch (lednumber){
-
+	case all:
+		MB1_L1.gpio_assign_value(l_enable_value);
+		MB1_L2.gpio_assign_value(l_enable_value);
+		MB1_L3.gpio_assign_value(l_enable_value);
+		MB1_L4.gpio_assign_value(l_enable_value);
+		break;
 	case 1:
 		MB1_L1.gpio_assign_value(l_enable_value);
 		MB1_L2.gpio_assign_value(!l_enable_value);

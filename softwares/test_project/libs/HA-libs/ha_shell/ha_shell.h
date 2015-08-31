@@ -38,6 +38,8 @@ extern "C" {
 #include "baro_testing_cmds.h"
 #include "spieb_testing_cmds.h"
 #include "adceb_testing_cmds.h"
+#include "button_testing_cmds.h"
+#include "lcd_testing_cmds.h"
 #endif
 
 namespace ha_ns {

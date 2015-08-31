@@ -14,12 +14,9 @@
  * @details Usage:
  *      led7seg_test -i, initialize hardware and data for the test.
  *      led7seg_test -d, deinitialize hardware and data for the test.
- *      led7seg_test -1, test led7seg 1.
- *      led7seg_test -2, test led7seg 2.
- *      led7seg_test -3, test led7seg 3.
- *      led7seg_test -4, test led7seg 4.
+ *      led7seg_test -a, test all led.
  *      led7seg_test -s, test led7seg scan.
- *      led7seg_test -f, perform full test = led7seg_test -i -1 -2 -3 -4 -s -d.
+ *      led7seg_test -f, perform full test = led7seg_test -i -a -s -d.
  *      led7seg_test -h, print the usage.
  *      Press ESC to stop the test.;
  *
