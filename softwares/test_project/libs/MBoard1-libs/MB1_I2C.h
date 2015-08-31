@@ -17,9 +17,9 @@ namespace i2c_ns {
 const uint8_t num_of_i2cs = 2;
 
 enum i2c_mode_e: uint16_t {
-    i2c = I2C_Mode_I2C,
-    smbus_device = I2C_Mode_SMBusDevice,
-    smbus_host = I2C_Mode_SMBusHost,
+    mode_i2c = I2C_Mode_I2C,
+    mode_smbus_device = I2C_Mode_SMBusDevice,
+    mode_smbus_host = I2C_Mode_SMBusHost,
 };
 
 enum i2c_fast_mode_duty_cycle_e: uint16_t {
@@ -59,7 +59,7 @@ public:
      *
      * @param[in]   init_structure, a struct holding parameters to initialize i2c module.
      */
-    void init(i2c_ns::i2c_params_t *init_structure);
+    void init(const i2c_ns::i2c_params_t *init_structure);
 
     /**
      * @brief   Disable i2c module and shutdown all gpios.
@@ -83,7 +83,7 @@ public:
      * @param[in]   stop_signal, true to generate STOP signal in the end of transaction.
      *
      */
-    void master_send(uint16_t slave_7b_addr, uint8_t *send_buff, uint16_t size,
+    void master_send(uint16_t slave_7b_addr, const uint8_t *send_buff, uint16_t size,
             bool stop_signal);
 
     /**

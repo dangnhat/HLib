@@ -31,7 +31,7 @@ static void gyro_full_test(void);
 static i2c *MB1_i2c_p = &MB1_I2C2;
 
 static i2c_ns::i2c_params_t i2c_params = {
-MPU6050_I2C_Speed, i2c_ns::i2c, i2c_ns::dc_2, i2c_ns::ack_enable,
+MPU6050_I2C_Speed, i2c_ns::mode_i2c, i2c_ns::dc_2, i2c_ns::ack_enable,
         i2c_ns::acked_address_7bit,
         MPU6050_DEFAULT_ADDRESS << 1, // BMP180 7-bit adress = 0x77, 8-bit address = 0xEE;
         };

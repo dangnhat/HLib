@@ -35,7 +35,7 @@ i2c::i2c(uint8_t usued_i2c)
 }
 
 /*----------------------------------------------------------------------------*/
-void i2c::init(i2c_ns::i2c_params_t *init_structure)
+void i2c::init(const i2c_ns::i2c_params_t *init_structure)
 {
     /* I2C clock enable */
     rcc_i2c_fp[used_i2c](rcc_i2cs[used_i2c], ENABLE);
@@ -98,9 +98,12 @@ void i2c::deinit(void)
 }
 
 /*----------------------------------------------------------------------------*/
-void i2c::master_send(uint16_t slave_7b_addr, uint8_t *send_buff,
+void i2c::master_send(uint16_t slave_7b_addr, const uint8_t *send_buff,
         uint16_t size, bool stop_signal)
 {
+    /* Wait while the bus is busy */
+    while(I2C_GetFlagStatus(i2cs[used_i2c], I2C_FLAG_BUSY));
+
     /* generate start signal */
     I2C_GenerateSTART(i2cs[used_i2c], ENABLE);
     /* check start bit flag (EV5) */
@@ -138,6 +141,9 @@ void i2c::master_send(uint16_t slave_7b_addr, uint8_t *send_buff,
 void i2c::master_receive(uint16_t slave_7b_addr, uint8_t slave_register,
         uint8_t *recv_buff, uint16_t size)
 {
+    /* Wait while the bus is busy */
+    while(I2C_GetFlagStatus(i2cs[used_i2c], I2C_FLAG_BUSY));
+
     /* generate start signal */
     I2C_GenerateSTART(i2cs[used_i2c], ENABLE);
     /* check start bit flag (EV5) */

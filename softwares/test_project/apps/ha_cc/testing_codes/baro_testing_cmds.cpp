@@ -29,7 +29,7 @@ static i2c *MB1_i2c_p = &MB1_I2C2;
 
 static i2c_ns::i2c_params_t i2c_params = {
 BMP180_I2C_Speed,
-i2c_ns::i2c,
+i2c_ns::mode_i2c,
 i2c_ns::dc_2,
 i2c_ns::ack_enable,
 i2c_ns::acked_address_7bit,
