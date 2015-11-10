@@ -18,7 +18,7 @@ using namespace testing_ns;
 
 /* Configuration data */
 /* SPI */
-static SPI* MB1_spi_p = &MB1_SPI2;
+static SPI* MB1_spi_p = &MB1_SPI1;
 static const SPI_ns::SPI_params_t spi_params = {
         SPI_ns::bp16,
         SPI_ns::cpha_1edge,
@@ -54,8 +54,8 @@ enum decoding_values_table: uint16_t {
 
 /* SS pin */
 static const gpio_ns::gpio_params_t ss0_params = {
-        gpio_ns::port_B,
-        12,
+        gpio_ns::port_A,
+        4,
         gpio_ns::out_push_pull,
         gpio_ns::speed_2MHz,
 };
@@ -63,7 +63,7 @@ static gpio MB1_ss0_pin;
 
 static const gpio_ns::gpio_params_t ss1_params = {
         gpio_ns::port_C,
-        6,
+        11,
         gpio_ns::out_push_pull,
         gpio_ns::speed_2MHz,
 };
