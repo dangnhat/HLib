@@ -12,7 +12,7 @@
 #include "string.h"
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (0)
+#define HA_DEBUG_EN (1)
 #include "ha_debug.h"
 
 using namespace testing_ns;
@@ -37,15 +37,10 @@ enum i2c_device_address_e: uint8_t {
     light_addr = 0x39,
 };
 
-/* 25LC04 EEPROM data */
-/* 7bit Address of EEPROM = eeprom_addr | (block0 or block1) */
-enum eeprom_block_sel_e: uint8_t {
-    block0 = 0x00,
-    block1 = 0x01,
-};
+/* AT24C128 EEPROM data */
 
 const uint8_t eeprom_max_datasize = 8;
-const uint8_t eeprom_start_addr = 0;
+const uint16_t eeprom_start_addr = 0;
 
 /* Light sensor data */
 enum lightic_cmd_e: uint8_t {
@@ -241,11 +236,11 @@ static void i2ceb_testing_deinit(void)
 static void i2ceb_eeprom_communication_test(void)
 {
     uint8_t temp = 0, count;
-    uint8_t buffer[eeprom_max_datasize + 1];
+    uint8_t buffer[eeprom_max_datasize + 2];
 
     start_waiting_esc_character();
 
-    HA_NOTIFY("\n*** EEPROM 25LC04 & MBOARD COMMUNICAION TEST ***\n"
+    HA_NOTIFY("\n*** EEPROM AT24C128 & MBOARD COMMUNICAION TEST ***\n"
                 "(press ESC to quit).\n");
 
     /* Write */
@@ -256,30 +251,32 @@ static void i2ceb_eeprom_communication_test(void)
     start_waiting_esc_character();
 
     while (1) {
-        /* Write data to start addresss */
-        buffer[0] = eeprom_start_addr;
-        HA_NOTIFY("\nWRITE(0x%-2x): ", buffer[0]);
+        /* Set up address (MSB first) */
+        buffer[0] = eeprom_start_addr >> 8;
+        buffer[1] = eeprom_start_addr & 0xFF;
+        HA_NOTIFY("\nWRITE(0x%-04x): ", eeprom_start_addr);
 
         for (count = 0; count < eeprom_max_datasize; count++) {
-            buffer[count + 1] = temp;
-            HA_NOTIFY("%x ", buffer[count + 1]);
+            buffer[count + 2] = temp;
+            HA_NOTIFY("%x ", buffer[count + 2]);
             temp++;
         }
         HA_NOTIFY("\n");
 
-        MB1_i2c_ptr->master_send(eeprom_addr | block0, buffer, eeprom_max_datasize + 1, true);
+        MB1_i2c_ptr->master_send(eeprom_addr, buffer, eeprom_max_datasize + 2, true);
 
         testing_delay_us(100000); /* 100ms */
 
         /* Read back */
-        memset(buffer, 0, eeprom_max_datasize + 1);
-        buffer[0] = eeprom_start_addr;
+        memset(buffer, 0, eeprom_max_datasize + 2);
+        buffer[0] = eeprom_start_addr >> 8;
+        buffer[1] = eeprom_start_addr & 0xFF;
 
-        HA_NOTIFY("READ (0x%-2x): ", buffer[0]);
-        MB1_i2c_ptr->master_receive(eeprom_addr | block0, buffer[0],
-                &buffer[1], eeprom_max_datasize);
+        HA_NOTIFY("\nREAD(0x%-04x): ", eeprom_start_addr);
+        MB1_i2c_ptr->master_send(eeprom_addr, buffer, 2, false);
+        MB1_i2c_ptr->master_receive_bare(eeprom_addr, &buffer[2], eeprom_max_datasize);
         for (count = 0; count < eeprom_max_datasize; count++) {
-            HA_NOTIFY("%x ", buffer[count + 1]);
+            HA_NOTIFY("%x ", buffer[count + 2]);
         }
         HA_NOTIFY("\n");
 
@@ -300,30 +297,32 @@ static void i2ceb_eeprom_communication_test(void)
     start_waiting_esc_character();
 
     while (1) {
-        /* Write data to start addresss */
-        buffer[0] = eeprom_start_addr;
-        HA_NOTIFY("\nWRITE(0x%-2x): ", buffer[0]);
+        /* Set up address (MSB first) */
+        buffer[0] = eeprom_start_addr >> 8;
+        buffer[1] = eeprom_start_addr & 0xFF;
+        HA_NOTIFY("\nWRITE(0x%-04x): ", eeprom_start_addr);
 
         for (count = 0; count < eeprom_max_datasize; count++) {
-            buffer[count + 1] = temp;
-            HA_NOTIFY("%x ", buffer[count + 1]);
+            buffer[count + 2] = temp;
+            HA_NOTIFY("%x ", buffer[count + 2]);
             temp++;
         }
         HA_NOTIFY("\n");
 
-        MB1_i2c_ptr->master_send(eeprom_addr | block0, buffer, eeprom_max_datasize + 1, true);
+        MB1_i2c_ptr->master_send(eeprom_addr, buffer, eeprom_max_datasize + 2, true);
 
         testing_delay_us(100000); /* 100ms */
 
         /* Read back */
-        memset(buffer, 0, eeprom_max_datasize + 1);
-        buffer[0] = eeprom_start_addr;
+        memset(buffer, 0, eeprom_max_datasize + 2);
+        buffer[0] = eeprom_start_addr >> 8;
+        buffer[1] = eeprom_start_addr & 0xFF;
 
-        HA_NOTIFY("READ (0x%-2x): ", buffer[0]);
-        MB1_i2c_ptr->master_receive(eeprom_addr | block0, buffer[0],
-                &buffer[1], eeprom_max_datasize);
+        HA_NOTIFY("\nREAD(0x%-04x): ", eeprom_start_addr);
+        MB1_i2c_ptr->master_send(eeprom_addr, buffer, 2, false);
+        MB1_i2c_ptr->master_receive_bare(eeprom_addr, &buffer[2], eeprom_max_datasize);
         for (count = 0; count < eeprom_max_datasize; count++) {
-            HA_NOTIFY("%x ", buffer[count + 1]);
+            HA_NOTIFY("%x ", buffer[count + 2]);
         }
         HA_NOTIFY("\n");
 

@@ -196,3 +196,40 @@ void i2c::master_receive(uint16_t slave_7b_addr, uint8_t slave_register,
     /* generate STOP signal */
     I2C_GenerateSTOP(i2cs[used_i2c], ENABLE);
 }
+
+/*----------------------------------------------------------------------------*/
+void i2c::master_receive_bare(uint16_t slave_7b_addr, uint8_t *recv_buff,
+        uint16_t size)
+{
+    /* re-enable ACK bit disabled in last call */
+    I2C_AcknowledgeConfig(i2cs[used_i2c], ENABLE);
+
+    /* generate START signal a second time (Re-Start) */
+    I2C_GenerateSTART(i2cs[used_i2c], ENABLE);
+    /* check start bit flag (EV5) */
+    while (!I2C_CheckEvent(i2cs[used_i2c],
+            I2C_EVENT_MASTER_MODE_SELECT));
+
+    /* send address for read */
+    I2C_Send7bitAddress(i2cs[used_i2c],
+            ((uint8_t) slave_7b_addr) << 1,
+            I2C_Direction_Receiver);
+    /* check master is now in Rx mode (EV6) */
+    while (!I2C_CheckEvent(i2cs[used_i2c],
+            I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
+
+    for (uint16_t i = 0; i < size; i++) {
+        /* receive all registers */
+        while (!I2C_CheckEvent(i2cs[used_i2c],
+                I2C_EVENT_MASTER_BYTE_RECEIVED));
+
+        recv_buff[i] = I2C_ReceiveData(i2cs[used_i2c]);
+    }
+
+    /* enable NACK bit */
+    I2C_NACKPositionConfig(i2cs[used_i2c], I2C_NACKPosition_Current);
+    I2C_AcknowledgeConfig(i2cs[used_i2c], DISABLE);
+
+    /* generate STOP signal */
+    I2C_GenerateSTOP(i2cs[used_i2c], ENABLE);
+}

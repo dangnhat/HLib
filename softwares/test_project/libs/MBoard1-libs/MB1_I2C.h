@@ -97,6 +97,17 @@ public:
      */
     void master_receive(uint16_t slave_7b_addr, uint8_t slave_register,
             uint8_t *recv_buff, uint16_t size);
+
+    /**
+     * @brief   Initiate a transaction to receive data from a slave (without
+     *          providing the address) and terminate with STOP signal
+     *
+     * @param[in]   slave_addr, address a slave.
+     * @param[out]  recv_buff, buffer holding received data.
+     * @param[in]   count, number of bytes need to be read from slave.
+     */
+    void master_receive_bare(uint16_t slave_7b_addr, uint8_t *recv_buff,
+            uint16_t size);
 private:
     uint8_t used_i2c = 1; //I2C1 as default
 };

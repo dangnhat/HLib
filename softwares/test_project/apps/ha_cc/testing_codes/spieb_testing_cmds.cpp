@@ -69,7 +69,7 @@ static const gpio_ns::gpio_params_t ss1_params = {
 };
 static gpio MB1_ss1_pin;
 
-/* 25LC256 EEPROM data */
+/* CAT25256 EEPROM data */
 enum eeprom_instruction_e: uint8_t {
     eeprom_read_ins = 0x03,
     eeprom_write_ins = 0x02,
@@ -319,7 +319,7 @@ static void spieb_eeprom_communication_test(void)
 
     start_waiting_esc_character();
 
-    HA_NOTIFY("\n*** EEPROM 25LC256 & MBOARD COMMUNICAION TEST ***\n"
+    HA_NOTIFY("\n*** EEPROM CAT25256 & MBOARD COMMUNICAION TEST ***\n"
                 "(press ESC to quit).\n");
 
     /* Attach */
@@ -339,7 +339,7 @@ static void spieb_eeprom_communication_test(void)
 
         /* Read back */
         temp = eeprom_read_status(MB1_spi_p, eeprom);
-        HA_NOTIFY("READ : WPEN: %u, BP1: %u, BP0: %u, WEL: %u, WIP: %u. (0x%x)\n",
+        HA_NOTIFY("READ : WPEN: %u, BP1: %u, BP0: %u, WEL: %u, RDY: %u. (0x%x)\n",
                 temp >> 7, (temp >> 3) & 0x01, (temp >> 2) & 0x01,
                 (temp >> 1) & 0x01, temp & 0x01, temp);
         testing_delay_us(1000000);
@@ -351,7 +351,7 @@ static void spieb_eeprom_communication_test(void)
 
         /* Read back */
         temp = eeprom_read_status(MB1_spi_p, eeprom);
-        HA_NOTIFY("READ : WPEN: %u, BP1: %u, BP0: %u, WEL: %u, WIP: %u. (0x%x)\n",
+        HA_NOTIFY("READ : WPEN: %u, BP1: %u, BP0: %u, WEL: %u, RDY: %u. (0x%x)\n",
                 temp >> 7, (temp >> 3) & 0x01, (temp >> 2) & 0x01,
                 (temp >> 1) & 0x01, temp & 0x01, temp);
         testing_delay_us(1000000);
