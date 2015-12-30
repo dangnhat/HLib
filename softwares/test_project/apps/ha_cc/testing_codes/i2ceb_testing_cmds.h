@@ -16,9 +16,10 @@
  *      i2ceb_test -i, initialize hardware and data for the test.
  *      i2ceb_test -d, deinitialize hardware and data.
  *      i2ceb_test -e, I2C EEPROM communication test.
+ *      i2ceb_test -w, 1-wired IC communication test.
  *      i2ceb_test -l, Light sensor IC communication test.
  *      i2ceb_test -t, Temperature IC communication test.
- *      i2ceb_test -f, perform full test = spieb_test -i -e -l -t -d.
+ *      i2ceb_test -f, perform full test = spieb_test -i -e -w -l -t -d.
  *      i2ceb_test -h, print the usage.
  *      Press ESC to stop the test.
  *

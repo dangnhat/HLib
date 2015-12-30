@@ -12,7 +12,7 @@
 #include "string.h"
 
 #define HA_NOTIFICATION (1)
-#define HA_DEBUG_EN (1)
+#define HA_DEBUG_EN (0)
 #include "ha_debug.h"
 
 using namespace testing_ns;
@@ -90,6 +90,24 @@ static const gpio_ns::gpio_params_t tarlt_params = {
 };
 static gpio MB1_tarlt0_pin;
 
+/* DS18B20 data */
+enum ds18b20_ins_e: uint8_t {
+    ds18b20_12bit_res = 3,
+    ds18b20_rom_skip = 0xCC,
+    ds18b20_convert = 0x44,
+    ds18b20_write_scr = 0x4E,
+    ds18b20_read_scr = 0xBE,
+};
+
+/* 1-wired pin */
+static gpio_ns::gpio_params_t onewired_params = {
+        gpio_ns::port_B,
+        3,
+        gpio_ns::out_push_pull,
+        gpio_ns::speed_50MHz,
+};
+static gpio MB1_1wired_pin;
+
 /* End configuration data */
 
 /* Shell command usages */
@@ -97,9 +115,10 @@ static const char i2ceb_test_usage[] = "Usage:\n"
         "i2ceb_test -i, initialize hardware and data for the test.\n"
         "i2ceb_test -d, deinitialize hardware and data.\n"
         "i2ceb_test -e, I2C EEPROM communication test.\n"
+        "i2ceb_test -w, 1-wired IC communication test.\n"
         "i2ceb_test -l, Light sensor IC communication test.\n"
         "i2ceb_test -t, Temperature IC communication test.\n"
-        "i2ceb_test -f, perform full test = spieb_test -i -e -l -t -d.\n"
+        "i2ceb_test -f, perform full test = spieb_test -i -e -w -l -t -d.\n"
         "i2ceb_test -h, print the usage.\n"
         "Press ESC to stop the test.\n";
 
@@ -117,11 +136,11 @@ static void i2ceb_testing_deinit(void);
 /**
  * @brief   MBoard-1 and EEPROM communication test.
  *          First, make sure that nWP jumper is not connected.
- *          Random data will be written to address 0x00 to 0x0F and read back.
+ *          Random data will be written from address 0x00 to 0x07 and read back.
  *          Written data and read data should be the same.
  *
  *          Then, connect nWP jumper.
- *          Random data will be written to address 0x00 to 0x0F and read back.
+ *          Random data will be written from address 0x00 to 0x07 and read back.
  *          Read data will stay the same regardless of written data.
  */
 static void i2ceb_eeprom_communication_test(void);
@@ -135,6 +154,37 @@ static void i2c_lightic_test(void);
  * @brief   MBoard-1 and TMP(2)75 communication test.
  */
 static void i2ceb_tmpic_test(void);
+
+/**
+ * @brief   MBoard and DS18B20 1-wired communication test
+ */
+static void i2ceb_1wired_test(void);
+
+/**
+ * @brief   Master MBoard creates a reset pulse to start a command
+ */
+static void ds18b20_init(void);
+
+/**
+ * @brief   Write a byte to IC DS18B20
+ *
+ * @param[in]   data, the byte value to be written
+ */
+static void ds18b20_write_byte(uint8_t data);
+
+/**
+ * @brief   Write a command to IC DS18B20
+ *
+ * @param[in]   data, the command to be written
+ */
+static void ds18b20_write_cmd(uint8_t data);
+
+/**
+ * @brief   Read a byte from IC DS18B20
+ *
+ * @return  the read value
+ */
+static uint8_t ds18b20_read_byte(void);
 
 /**
  * @brief   Full test.
@@ -179,6 +229,11 @@ void i2ceb_test(int argc, char **argv)
                     i2ceb_tmpic_test();
                     break;
 
+                case 'w':
+                    /* 1-wired communication test */
+                    i2ceb_1wired_test();
+                    break;
+
                 case 'f':
                     /* Full test */
                     i2ceb_full_test();
@@ -207,15 +262,18 @@ static void i2ceb_testing_init(void)
     HA_NOTIFY("\n*** Initializing hardware for I2C EB tests ***\n"
             "I2C: %u, Speed(Hz): %lu,\n"
             "Temperature ALERT pin: port: %u (port A = 0,...), pin: %u\n"
-            "Light INT pin: port: %u (port A = 0,...), pin: %u\n",
+            "Light INT pin: port: %u (port A = 0,...), pin: %u\n"
+            "1-Wired pin: port: %u (port A = 0,...), pin: %u\n",
             MB1_i2c_ptr->get_used_i2c(), i2c_params.clock_speed,
             tarlt_params.port, tarlt_params.pin,
-            lint_params.port, lint_params.pin);
+            lint_params.port, lint_params.pin,
+            onewired_params.port, onewired_params.pin);
 
     /* Init SPI and GPIOs */
     MB1_i2c_ptr->init(&i2c_params);
     MB1_tarlt0_pin.gpio_init(&tarlt_params);
     MB1_lint_pin.gpio_init(&lint_params);
+    MB1_1wired_pin.gpio_init(&onewired_params);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -230,6 +288,7 @@ static void i2ceb_testing_deinit(void)
     MB1_i2c_ptr->deinit();
     MB1_tarlt0_pin.gpio_shutdown();
     MB1_lint_pin.gpio_shutdown();
+    MB1_1wired_pin.gpio_shutdown();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -254,7 +313,7 @@ static void i2ceb_eeprom_communication_test(void)
         /* Set up address (MSB first) */
         buffer[0] = eeprom_start_addr >> 8;
         buffer[1] = eeprom_start_addr & 0xFF;
-        HA_NOTIFY("\nWRITE(0x%-04x): ", eeprom_start_addr);
+        HA_NOTIFY("\nWRITE(0x%04x): ", eeprom_start_addr);
 
         for (count = 0; count < eeprom_max_datasize; count++) {
             buffer[count + 2] = temp;
@@ -272,7 +331,7 @@ static void i2ceb_eeprom_communication_test(void)
         buffer[0] = eeprom_start_addr >> 8;
         buffer[1] = eeprom_start_addr & 0xFF;
 
-        HA_NOTIFY("\nREAD(0x%-04x): ", eeprom_start_addr);
+        HA_NOTIFY("\nREAD(0x%04x): ", eeprom_start_addr);
         MB1_i2c_ptr->master_send(eeprom_addr, buffer, 2, false);
         MB1_i2c_ptr->master_receive_bare(eeprom_addr, &buffer[2], eeprom_max_datasize);
         for (count = 0; count < eeprom_max_datasize; count++) {
@@ -300,7 +359,7 @@ static void i2ceb_eeprom_communication_test(void)
         /* Set up address (MSB first) */
         buffer[0] = eeprom_start_addr >> 8;
         buffer[1] = eeprom_start_addr & 0xFF;
-        HA_NOTIFY("\nWRITE(0x%-04x): ", eeprom_start_addr);
+        HA_NOTIFY("\nWRITE(0x%04x): ", eeprom_start_addr);
 
         for (count = 0; count < eeprom_max_datasize; count++) {
             buffer[count + 2] = temp;
@@ -318,7 +377,7 @@ static void i2ceb_eeprom_communication_test(void)
         buffer[0] = eeprom_start_addr >> 8;
         buffer[1] = eeprom_start_addr & 0xFF;
 
-        HA_NOTIFY("\nREAD(0x%-04x): ", eeprom_start_addr);
+        HA_NOTIFY("\nREAD(0x%04x): ", eeprom_start_addr);
         MB1_i2c_ptr->master_send(eeprom_addr, buffer, 2, false);
         MB1_i2c_ptr->master_receive_bare(eeprom_addr, &buffer[2], eeprom_max_datasize);
         for (count = 0; count < eeprom_max_datasize; count++) {
@@ -489,11 +548,151 @@ static void i2ceb_tmpic_test(void)
 }
 
 /*----------------------------------------------------------------------------*/
+static void i2ceb_1wired_test(void)
+{
+    uint32_t val;
+    uint16_t temp;
+
+    start_waiting_esc_character();
+
+    HA_NOTIFY("\n*** DS18B20 & MBOARD 1-WIRED COMMUNICAION TEST ***\n"
+                "(press ESC to quit).\n");
+
+    /* write the resolution to configuration register */
+    ds18b20_write_cmd(ds18b20_write_scr);
+    ds18b20_write_cmd(45);
+    ds18b20_write_cmd(10);
+    ds18b20_write_cmd((ds18b20_12bit_res << 5) | 0x1F);
+
+    HA_NOTIFY("\n16b data(hex):\tT(oC):\n");
+    while(1)
+    {
+        /* Get temperature */
+        ds18b20_write_cmd(ds18b20_convert);
+        testing_delay_us(750000);
+        ds18b20_write_cmd(ds18b20_read_scr);
+
+        temp = ds18b20_read_byte();
+        temp = (temp) | (ds18b20_read_byte() << 8);
+
+        val = (float)(temp & 0x07FF) * 0.0625 * 10000;
+
+        HA_NOTIFY("\r0x%04X\t\t%ld.%04ld", temp, val / 10000,
+                val - (val / 10000)*10000);
+        HA_FLUSH_STDOUT();
+
+        testing_delay_us(250000);
+
+        /* poll the esc_pressed */
+        if (esc_pressed == true) {
+            break;
+        }
+    }
+
+    stop_waiting_esc_character();
+    HA_NOTIFY("\nTest stopped.\n");
+}
+
+/*----------------------------------------------------------------------------*/
+static void ds18b20_init()
+{
+    /* change to output mode */
+    MB1_1wired_pin.gpio_shutdown();
+    onewired_params.mode = gpio_ns::out_push_pull;
+    MB1_1wired_pin.gpio_init(&onewired_params);
+
+    /* reset pulse */
+    MB1_1wired_pin.gpio_reset();
+
+    testing_delay_us(480);
+
+    /* release the pin */
+    MB1_1wired_pin.gpio_set();
+
+    /* change to input mode */
+    MB1_1wired_pin.gpio_shutdown();
+    onewired_params.mode = gpio_ns::in_pull_up;
+    MB1_1wired_pin.gpio_init(&onewired_params);
+
+    testing_delay_us(480);
+}
+
+/*----------------------------------------------------------------------------*/
+static void ds18b20_write_byte(uint8_t data)
+{
+    uint8_t i = 0;
+
+    /* change to output mode */
+    MB1_1wired_pin.gpio_shutdown();
+    onewired_params.mode = gpio_ns::out_push_pull;
+    MB1_1wired_pin.gpio_init(&onewired_params);
+
+    for (i = 0; i < 8; i++)
+    {
+        MB1_1wired_pin.gpio_reset();
+        if (data & 0x01)
+        {
+            MB1_1wired_pin.gpio_set();
+            testing_delay_us(114);
+        }
+        else
+        {
+            testing_delay_us(120);
+            MB1_1wired_pin.gpio_set();
+        }
+
+        data >>= 1;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+static uint8_t ds18b20_read_byte(void)
+{
+    uint8_t i=0, data=0;
+
+    for (i=0; i<8; i++)
+    {
+        /* change to output mode */
+        MB1_1wired_pin.gpio_shutdown();
+        onewired_params.mode = gpio_ns::out_push_pull;
+        MB1_1wired_pin.gpio_init(&onewired_params);
+
+        /* Pull down then release the pin */
+        MB1_1wired_pin.gpio_reset();
+        data >>= 1;
+        MB1_1wired_pin.gpio_set();
+
+        /* change to input mode */
+        MB1_1wired_pin.gpio_shutdown();
+        onewired_params.mode = gpio_ns::in_pull_up;
+        MB1_1wired_pin.gpio_init(&onewired_params);
+
+        if (MB1_1wired_pin.gpio_read()) data|=0x80;
+
+        testing_delay_us(120);
+    }
+
+    return data;
+}
+
+/*----------------------------------------------------------------------------*/
+static void ds18b20_write_cmd(uint8_t data)
+{
+    ds18b20_init();
+
+    ds18b20_write_byte(ds18b20_rom_skip);
+
+    ds18b20_write_byte(data);
+}
+
+/*----------------------------------------------------------------------------*/
 static void i2ceb_full_test(void)
 {
     i2ceb_testing_init();
 
     i2ceb_eeprom_communication_test();
+
+    i2ceb_1wired_test();
 
     i2c_lightic_test();
 
