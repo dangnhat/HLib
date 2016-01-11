@@ -41,6 +41,7 @@ extern "C" {
 #include "adceb_testing_cmds.h"
 #include "button_testing_cmds.h"
 #include "lcd_testing_cmds.h"
+#include "caneb_testing_cmds.h"
 #endif
 
 namespace ha_ns {
