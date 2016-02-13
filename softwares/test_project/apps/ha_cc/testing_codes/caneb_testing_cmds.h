@@ -1,5 +1,5 @@
 /**
- * @file spieb_testing_cmds.h
+ * @file caneb_testing_cmds.h
  * @author  Nguyen Dinh Trung Truc  <truc.ndtt@gmail.com>.
  * @version 1.0
  * @date 11-Jan-2016
