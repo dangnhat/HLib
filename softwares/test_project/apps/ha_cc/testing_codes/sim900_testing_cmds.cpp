@@ -1,8 +1,8 @@
 /**
  * @file sim900_testing_cmds.cpp
  * @author  Nguyen Dinh Trung Truc  <truc.ndtt@gmail.com>.
- * @version 1.0
- * @date 12-Feb-2016
+ * @version 1.1
+ * @date 15-Feb-2016
  * @brief Source file for Sim900 testing shell commands.
  */
 
@@ -27,8 +27,17 @@ static serial_t MB1_usart(uart_num);
 static ISRMgr MB1_int;
 static const ISRMgr_ns::ISR_t MB1_int_type = ISRMgr_ns::ISRMgr_USART3;
 
+/* RI pin */
+static gpio_ns::gpio_params_t RI_params = {
+        gpio_ns::port_B,
+        3,
+        gpio_ns::in_pull_up,
+        gpio_ns::speed_50MHz,
+};
+static gpio RI_pin;
+
 /* Ring buffer*/
-#define MAX_SIZE_RB 255
+#define MAX_SIZE_RB 128
 
 typedef struct rb_handle_t
 {
@@ -178,8 +187,10 @@ void sim900_test(int argc, char** argv)
 static void sim900_testing_init(void)
 {
     HA_NOTIFY("\nInitializing hardware for sim900 tests\n"
-            "USART: %u, Baudrate: %lu\n",
-            uart_num, baudrate);
+            "USART: %u, Baudrate: %lu\n"
+            "RI pin: port: %u (port A = 0,...), pin: %u\n",
+            uart_num, baudrate,
+            RI_params.port, RI_params.pin);
 
     /* Initialize UART */
     MB1_usart.Restart(baudrate);
@@ -187,8 +198,13 @@ static void sim900_testing_init(void)
     MB1_usart.it_config(USART_IT_RXNE, ENABLE);
     MB1_int.subISR_assign(MB1_int_type, usart3_irq);
 
+    /* Init RI pin */
+    RI_pin.gpio_init(&RI_params);
+
+    HA_NOTIFY("\nRI: %d (should be 1)\n", RI_pin.gpio_read());
+
     /* Create ring buffer */
-    rb_init(&rx_buffer, 255);
+    rb_init(&rx_buffer, 128);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -199,11 +215,15 @@ static void sim900_testing_deinit(void)
             "All IO pins will be reset to IN_FLOATING\n",
             uart_num);
 
-    testing_delay_us(1000000);
-
+    /*Deinit USART and INT*/
     MB1_int.subISR_remove(ISRMgr_ns::ISRMgr_USART3, usart3_irq);
     MB1_usart.it_disable();
     MB1_usart.Shutdown();
+
+    /* Deinit RI pin */
+    RI_pin.gpio_shutdown();
+
+    rb_clear(&rx_buffer);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -262,6 +282,7 @@ static uint16_t rb_get_data(rb_handle_t *rb_data, uint8_t *buf, uint16_t size)
     return size;
 }
 
+/*----------------------------------------------------------------------------*/
 static void rb_clear(rb_handle_t *rb_data)
 {
     rb_data->size = 0;
@@ -269,29 +290,30 @@ static void rb_clear(rb_handle_t *rb_data)
     rb_data->tail = 0;
 }
 
+/*----------------------------------------------------------------------------*/
 static void sim900_init(void)
 {
     HA_NOTIFY("\nInitializing SIM900 (about 5 seconds) ...\n");
 
     /* Turn echo off */
-    testing_delay_us(1000000);
     MB1_usart.Print("ATE0\r");
+    testing_delay_us(1000000);
 
     /* SMS in text mode */
-    testing_delay_us(1000000);
     MB1_usart.Print("AT+CMGF=1\r");
+    testing_delay_us(1000000);
 
     /* Set how the modem will response when a SMS is received */
-    testing_delay_us(1000000);
     MB1_usart.Print("AT+CNMI=1,2,0,0,0\r");
+    testing_delay_us(1000000);
 
     /* Show caller number */
-    testing_delay_us(1000000);
     MB1_usart.Print("AT+CLIP=1\r");
+    testing_delay_us(1000000);
 
     /* report feature */
-    testing_delay_us(1000000);
     MB1_usart.Print("AT+CSMP=17,167,0,240\r");
+    testing_delay_us(1000000);
 
     /* Clear RX buffer */
     rb_clear(&rx_buffer);
@@ -299,6 +321,7 @@ static void sim900_init(void)
     HA_NOTIFY("DONE !\n");
 }
 
+/*----------------------------------------------------------------------------*/
 static void sim900_uart_test(void)
 {
     uint8_t state = 0, data;
@@ -312,6 +335,7 @@ static void sim900_uart_test(void)
     while (esc_pressed == false);
     stop_waiting_esc_character();
 
+    /* Clear buffer before testing */
     rb_clear(&rx_buffer);
 
     HA_NOTIFY("\nSending \"AT\" ...\n");
@@ -321,6 +345,7 @@ static void sim900_uart_test(void)
 
     while (1)
     {
+        /* Receive OK */
         if (rb_get_data(&rx_buffer,&data,1) > 0)
         {
             switch (state)
@@ -332,29 +357,35 @@ static void sim900_uart_test(void)
             case 1:
                 if (data == 'K') state = 2;
                 break;
+
+            case 2:
+                if (data == '\r')
+                {
+                    state = 3;
+                    HA_NOTIFY("\nReceive \"OK\", Successful !\n");
+                }
+                break;
             }
         }
 
-        if (state == 2) break;
-
-        if (esc_pressed) break;
+        if (esc_pressed == true)
+        {
+            break;
+        }
     }
 
     stop_waiting_esc_character();
 
-    if (state == 2)
+    /* Fail to receive "OK" */
+    if (state != 3)
     {
-        HA_NOTIFY("Receive \"OK\" !\n");
-    }
-    else
-    {
-        HA_NOTIFY("Fail\n");
+        HA_NOTIFY("\nFail\n");
     }
 }
 
 static void sim900_gsm_test(void)
 {
-    uint8_t state = 0, data;
+    uint8_t state = 0, data, ri = 0;
 
     start_waiting_esc_character();
 
@@ -365,6 +396,7 @@ static void sim900_gsm_test(void)
     while (esc_pressed == false);
     stop_waiting_esc_character();
 
+    /* Clear buffer brfore testing */
     rb_clear(&rx_buffer);
 
     HA_NOTIFY("\nCalling *101# ... \n");
@@ -381,11 +413,15 @@ static void sim900_gsm_test(void)
         {
             switch (state)
             {
+            /* Print content between two " " */
             case 0:
                 if (data == '"')
                 {
                     state = 1;
-                    HA_NOTIFY("\nReceived message: \n");
+                    HA_NOTIFY("\nReceived Message: \n");
+
+                    /*check RI pin*/
+                    if (RI_pin.gpio_read() == 0) ri = 1;
                 }
                 break;
 
@@ -393,31 +429,50 @@ static void sim900_gsm_test(void)
                 if (data == '"')
                 {
                     state = 2;
+                    HA_NOTIFY("\n");
                 }
                 else
                 {
                     HA_NOTIFY("%c", (char)data);
                 }
                 break;
+
+            /* End of message */
+            case 2:
+                if (data == '\r')
+                {
+                    state = 3;
+                    HA_NOTIFY("\nSuccessful !\n");
+                }
+                break;
             }
+
         }
 
-        if (state == 2)
+        if (esc_pressed == true)
         {
-            HA_NOTIFY("\n");
             break;
         }
-
-        if (esc_pressed) break;
     }
 
     stop_waiting_esc_character();
 
-    if (state != 2)
+    /* Fail to receive message */
+    if (state != 3)
     {
         HA_NOTIFY("\nFail\n");
     }
-
+    else
+    {
+        if (ri == 1)
+        {
+            HA_NOTIFY("\nRI pin works\n");
+        }
+        else
+        {
+            HA_NOTIFY("\nRI pin does not work\n");
+        }
+    }
 }
 
 /*----------------------------------------------------------------------------*/
