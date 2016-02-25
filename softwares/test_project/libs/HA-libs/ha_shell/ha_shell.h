@@ -44,6 +44,10 @@ extern "C" {
 #include "caneb_testing_cmds.h"
 #endif
 
+#ifdef MB_DEMO
+#include "sim900_cmds.h"
+#endif
+
 namespace ha_ns {
 extern kernel_pid_t shell_pid;
 }

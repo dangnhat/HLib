@@ -79,6 +79,11 @@ const shell_command_t shell_commands[] = {
 	{"lcd_test", "LCD EB testing command", lcd_test},
 	{"caneb_test", "CAN EB testing command", caneb_test},
 #endif
+
+#ifdef MB_DEMO
+    {"sms", "Send an SMS message to a specified phone number", send_sms_demo},
+    {"call", "Make a voice call to a specified phone number", make_voicecall_demo},
+#endif
     {NULL, NULL, NULL}
 };
 
