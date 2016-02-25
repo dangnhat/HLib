@@ -79,6 +79,8 @@ public:
 
     /**
      * @brief Shutdown GPIO on the specified port/pin. Reset this pin to IN_FLOATING.
+     *
+     * @return true if success, false otherwise.
      */
     bool gpio_shutdown(void);
 

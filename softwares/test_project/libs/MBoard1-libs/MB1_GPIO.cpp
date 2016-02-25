@@ -43,6 +43,8 @@ bool gpio::gpio_init(const gpio_params_t *gpio_params)
     if (gpio_params->mode == out_open_drain
             || gpio_params->mode == out_push_pull) {
         in_mode = false;
+    } else {
+        in_mode = true;
     }
 
     /* Initialize GPIO */
