@@ -57,6 +57,7 @@ void make_voicecall_demo(int argc, char** argv)
             if (strlen(argv[count]) > 11 || strlen(argv[count]) < 10
                     || !numbers_only(argv[count])) {
                 printf("Invalid phone number\n");
+                return;
             }
             strcpy(phone_number, argv[count]);
 

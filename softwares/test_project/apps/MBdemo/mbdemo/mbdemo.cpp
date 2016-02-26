@@ -43,49 +43,49 @@ gpio_params_t lcdRS_gpio = {
         port_B,//A,
         11,//2,
         out_push_pull,
-        speed_2MHz
+        speed_10MHz
 };
 
 gpio_params_t lcdEN_gpio = {
         port_B,//A,
         10,//1,
         out_push_pull,
-        speed_2MHz
+        speed_10MHz
 };
 
 gpio_params_t lcdBL_gpio = {
         port_C,
         6,//13,
         out_push_pull,
-        speed_2MHz
+        speed_10MHz
 };
 
 gpio_params_t lcdD4_gpio = {
         port_B,
         12,//6,
         out_push_pull,
-        speed_2MHz
+        speed_10MHz
 };
 
 gpio_params_t lcdD5_gpio = {
         port_B,
         13,//7,
         out_push_pull,
-        speed_2MHz
+        speed_10MHz
 };
 
 gpio_params_t lcdD6_gpio = {
         port_B,
         14,//8,
         out_push_pull,
-        speed_2MHz
+        speed_10MHz
 };
 
 gpio_params_t lcdD7_gpio = {
         port_B,
         15,//9,
         out_push_pull,
-        speed_2MHz
+        speed_10MHz
 };
 
 void mbdemo_init(void) {
@@ -103,7 +103,7 @@ void mbdemo_init(void) {
 
     //LCD init
     cLCD_Init();
-    cLCD_Init();
+    cLCD_Clear();
 }
 
 void* sim900a_handler(void* arg)
@@ -120,6 +120,8 @@ void* sim900a_handler(void* arg)
         if (msg.type == SIM900_ID) {
             //make a voice call
             printf("%s\n", (char*) msg.content.ptr);
+            cLCD_Clear();
+            cLCD_Printf("%s", (char*) msg.content.ptr);
         }
     }
 
