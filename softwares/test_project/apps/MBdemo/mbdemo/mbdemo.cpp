@@ -26,9 +26,9 @@ kernel_pid_t mbdemo_ns::thread_pid[mbdemo_ns::max_threads];
 
 static const uint8_t queue_handler_size = 128;
 
-gpio_params_t btn0_gpio = { port_B, 6, in_floating, speed_2MHz };
+gpio_params_t btn0_gpio = { port_B, 9, in_floating, speed_2MHz };
 
-gpio_params_t btn1_gpio = { port_B, 7, in_floating, speed_2MHz };
+gpio_params_t btn1_gpio = { port_B, 8, in_floating, speed_2MHz };
 
 gpio_params_t lcdRS_gpio = { port_B, //A,
         11, //2,
@@ -83,8 +83,8 @@ void mbdemo_init(void)
     MB1_USART2.Restart(baudrate);
 
     sim900_Init();
-
-    printf("\nFinish UART\n");
+    cLCD_Clear();
+    cLCD_Printf("  WELCOME TO\n     HCMUT");
 }
 
 void* sim900a_handler(void* arg)
@@ -111,6 +111,9 @@ void* sim900a_handler(void* arg)
         } else if (msg.type == VC_END_BS_ID) {
             cLCD_Clear();
             cLCD_Printf("      BUSY");
+        } else if (msg.type == VC_END_NO_ID) {
+            cLCD_Clear();
+            cLCD_Printf("  NO ANSWER");
         }
     }
 
@@ -137,11 +140,15 @@ void* btn_lcd_handler(void* arg)
     while (1) {
         msg_receive(&msg);
         switch (msg.type) {
-        case BTN0_ID: //up-button
-            printf("btn0: %d\n", (uint8_t) msg.content.value);
+        case BTN0_ID: //D
+            //printf("btn_up: %d\n", (uint8_t) msg.content.value);
+            cLCD_Clear();
+            MB1_USART2.Print("ATH\r");
             break;
-        case BTN1_ID: //down-button
-            printf("btn1: %d\n", (uint8_t) msg.content.value);
+        case BTN1_ID: //U
+            //printf("btn1: %d\n", (uint8_t) msg.content.value);
+            cLCD_Clear();
+            MB1_USART2.Print("ATH\r");
             break;
         default:
             break;
@@ -157,12 +164,16 @@ void* sim900_proc_handler(void *arg)
     uint8_t data, state = 0;
     char pattern_vc[] = "+CLIP: \"";
     char pattern_vc_end[] = "NO CARRIER\r\n";
+    char pattern_vc_no_ans[] = "NO ANSWER\r\n";
     char pattern_vc_end_bs[] = "BUSY\r\n";
     char pattern_sms[] = "+CMT: \"";
+    char pattern_ok[] = "OK\r\n";
     char *ptr_sms_tmp = pattern_sms;
     char *ptr_vc_tmp = pattern_vc;
     char *ptr_vc_bs_tmp = pattern_vc_end_bs;
     char *pn_ptr = phone_number;
+    char *ptr_vc_no_tmp = pattern_vc_no_ans;
+    char *ptr_ok_tmp = pattern_ok;
 
     printf("==== sim900_proc thread ====\n");
 
@@ -220,12 +231,26 @@ void* sim900_proc_handler(void *arg)
                         ptr_sms_tmp = pattern_sms;
                         ptr_vc_tmp = pattern_vc;
                         ptr_vc_bs_tmp = pattern_vc_end_bs;
+                        ptr_vc_no_tmp = pattern_vc_no_ans;
                         msg.type = VC_END_BS_ID;
                         msg_send(&msg, mbdemo_ns::thread_pid[0], false);
                     }
                     ptr_vc_bs_tmp++;
                 } else {
                     ptr_vc_bs_tmp = pattern_vc_end_bs;
+                }
+                if (data == (uint8_t) *ptr_vc_no_tmp) {
+                    if (*ptr_vc_no_tmp == '\r') {
+                        ptr_sms_tmp = pattern_sms;
+                        ptr_vc_tmp = pattern_vc;
+                        ptr_vc_bs_tmp = pattern_vc_end_bs;
+                        ptr_vc_no_tmp = pattern_vc_no_ans;
+                        msg.type = VC_END_NO_ID;
+                        msg_send(&msg, mbdemo_ns::thread_pid[0], false);
+                    }
+                    ptr_vc_no_tmp++;
+                } else {
+                    ptr_vc_no_tmp = pattern_vc_no_ans;
                 }
                 break;
             case 3:
@@ -241,6 +266,13 @@ void* sim900_proc_handler(void *arg)
                 } else {
                     ptr_vc_tmp = pattern_vc_end;
                 }
+
+                if (data == (uint8_t)*ptr_ok_tmp)
+                {
+                    if (*ptr_ok_tmp == '\n') state = 2;
+                    ptr_ok_tmp++;
+                }
+                else ptr_ok_tmp = pattern_ok;
                 break;
             default:
                 break;

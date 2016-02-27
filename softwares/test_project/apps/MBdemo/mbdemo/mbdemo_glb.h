@@ -21,6 +21,7 @@ extern "C" {
 #define VC_ID 0x24
 #define VC_END_ID 0x25
 #define VC_END_BS_ID 0x26
+#define VC_END_NO_ID 0x27
 
 namespace mbdemo_ns {
 const uint8_t max_threads = 3;
