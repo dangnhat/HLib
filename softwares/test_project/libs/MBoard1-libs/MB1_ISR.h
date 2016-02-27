@@ -46,6 +46,7 @@ typedef enum {
     ISRMgr_RTC,
     ISRMgr_TIM6,
     ISRMgr_USART1,
+    ISRMgr_USART2,
     ISRMgr_USART3
 } ISR_t;
 
@@ -82,6 +83,12 @@ private:
     ISRMgr_ns::status_t subISR_USART1_remove ( void (* subISR_p) (void) );
     /**< USART1 */
 
+    /**< USART2 */
+    void USART2_subISR_table_init (void);
+    ISRMgr_ns::status_t subISR_USART2_assign ( void (* subISR_p) (void) );
+    ISRMgr_ns::status_t subISR_USART2_remove ( void (* subISR_p) (void) );
+    /**< USART2 */
+
     /**< USART3 */
 	void USART3_subISR_table_init (void);
 	ISRMgr_ns::status_t subISR_USART3_assign ( void (* subISR_p) (void) );
@@ -110,6 +117,7 @@ void isr_exti4(void);
 void isr_exti9_5(void);
 void isr_exti15_10(void);
 void isr_usart3(void);
+void isr_usart2(void);
 void isr_rtc(void);
 #ifdef __cplusplus
 }

@@ -36,6 +36,10 @@ void (*TIM6_subISR_table[numOfSubISR_max])(void);
 void (*USART1_subISR_table[numOfSubISR_max])(void);
 /**< USART1 sub ISR table */
 
+/**< USART2 sub ISR table */
+void (*USART2_subISR_table[numOfSubISR_max])(void);
+/**< USART2 sub ISR table */
+
 /**< USART3 sub ISR table */
 void (*USART3_subISR_table[numOfSubISR_max])(void);
 /**< USART3 sub ISR table */
@@ -55,6 +59,7 @@ ISRMgr::ISRMgr(void)
     TIM6_subISR_table_init();
     USART1_subISR_table_init();
     EXTI_subISR_table_init();
+    USART2_subISR_table_init();
     USART3_subISR_table_init();
     return;
 }
@@ -84,6 +89,9 @@ status_t ISRMgr::subISR_assign(ISR_t ISR_type, void (*subISR_p)(void))
         break;
     case ISRMgr_USART1:
         retval = subISR_USART1_assign(subISR_p);
+        break;
+    case ISRMgr_USART2:
+        retval = subISR_USART2_assign(subISR_p);
         break;
     case ISRMgr_USART3:
         retval = subISR_USART3_assign(subISR_p);
@@ -138,6 +146,9 @@ status_t ISRMgr::subISR_remove(ISR_t ISR_type, void (*subISR_p)(void))
         break;
     case ISRMgr_USART1:
         retval = subISR_USART1_remove(subISR_p);
+        break;
+    case ISRMgr_USART2:
+        retval = subISR_USART2_remove(subISR_p);
         break;
     case ISRMgr_USART3:
         retval = subISR_USART3_remove(subISR_p);
@@ -426,6 +437,70 @@ void ISRMgr::USART1_subISR_table_init(void)
 }
 /**< USART1 private */
 
+/**< USART2 private */
+/**
+ * @brief subISR_USART2_assign. assign a sub ISR func ptr to USART2_subISR_table.
+ * @param void (* subISR_p)(void)
+ * @return None.
+ */
+status_t ISRMgr::subISR_USART2_assign(void (*subISR_p)(void))
+{
+    uint8_t i;
+    bool found = false;
+
+    for (i = 0; i < numOfSubISR_max; i++) {
+        if (USART2_subISR_table[i] == NULL) {
+            found = true;
+            USART2_subISR_table[i] = subISR_p;
+
+            break;
+        }
+    }
+
+    if (found)
+        return successful;
+
+    return failed;
+}
+
+/**
+ * @brief subISR_USART2_remove. Remove a sub ISR func ptr to USART2_subISR_table.
+ * @param void (* subISR_p)(void)
+ * @return None.
+ */
+status_t ISRMgr::subISR_USART2_remove(void (*subISR_p)(void))
+{
+    uint8_t i;
+    bool found = false;
+
+    for (i = 0; i < numOfSubISR_max; i++) {
+        if (USART2_subISR_table[i] == subISR_p) {
+            found = true;
+            USART2_subISR_table[i] = NULL;
+
+            break;
+        }
+    }
+
+    if (found)
+        return successful;
+
+    return failed;
+}
+
+/**
+ * @brief USART2_subISR_table_init. Init all value in USART2_subISR_table.
+ * @return None.
+ */
+void ISRMgr::USART2_subISR_table_init(void)
+{
+    uint8_t a_count;
+    for (a_count = 0; a_count < numOfSubISR_max; a_count++) {
+        USART2_subISR_table[a_count] = NULL;
+    }
+}
+/**< USART2 private */
+
 /**< USART3 private */
 /**
  * @brief subISR_USART3_assign. assign a sub ISR func ptr to USART3_subISR_table.
@@ -485,7 +560,7 @@ void ISRMgr::USART3_subISR_table_init(void)
 {
     uint8_t a_count;
     for (a_count = 0; a_count < numOfSubISR_max; a_count++) {
-        USART1_subISR_table[a_count] = NULL;
+        USART3_subISR_table[a_count] = NULL;
     }
 }
 /**< USART3 private */
@@ -873,6 +948,32 @@ void isr_usart3(void)
     USART_ClearITPendingBit  (USART3, USART_IT_CTS);
     USART_ClearITPendingBit  (USART3, USART_IT_LBD);
     USART_ClearITPendingBit  (USART3, USART_IT_TC);
+
+
+    /* RIOT specific code */
+    if (sched_context_switch_request) {
+        thread_yield();
+    }
+    /* RIOT specific code */
+
+    return;
+}
+
+void isr_usart2(void)
+{
+    uint8_t a_count;
+
+    for (a_count = 0; a_count < numOfSubISR_max; a_count++) {
+        if (USART2_subISR_table[a_count] != NULL) {
+            USART2_subISR_table[a_count]();
+        }
+    }
+
+    /* clear IT flags */
+    USART_ClearITPendingBit  (USART2, USART_IT_RXNE);
+    USART_ClearITPendingBit  (USART2, USART_IT_CTS);
+    USART_ClearITPendingBit  (USART2, USART_IT_LBD);
+    USART_ClearITPendingBit  (USART2, USART_IT_TC);
 
 
     /* RIOT specific code */
