@@ -15,7 +15,7 @@ extern "C" {
 #include "sim900_cmds.h"
 #include "mbdemo_glb.h"
 
-char phone_number[12];
+char phone_number[15];
 
 const char call_cmd_usage[] = "Usage:\n"
         "call phone-number, make a voice call to phone-number.\n"
@@ -63,7 +63,7 @@ void make_voicecall_demo(int argc, char** argv)
 
             //send phone number to sim900 thread
             msg_t msg;
-            msg.type = SIM900_ID;
+            msg.type = SHELL_ID;
             msg.content.ptr = phone_number;
             msg_send(&msg, mbdemo_ns::thread_pid[0], false);
         }

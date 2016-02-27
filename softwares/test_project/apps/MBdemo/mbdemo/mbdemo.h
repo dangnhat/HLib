@@ -14,5 +14,6 @@
 void mbdemo_init(void);
 void* sim900a_handler(void* arg);
 void* btn_lcd_handler(void* arg);
+void* sim900_proc_handler(void* arg);
 
 #endif /* MBDEMO_H_ */

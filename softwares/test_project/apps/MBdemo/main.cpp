@@ -12,8 +12,7 @@ extern "C" {
 #include "mbdemo.h"
 
 /* configurable variables */
-const int16_t stack_size = 1550;
-const char thread_name[mbdemo_ns::max_threads][8] = { "SIM900A", "BTN-LCD", };
+const int16_t stack_size = 1650;
 
 char stack[mbdemo_ns::max_threads][stack_size];
 
@@ -27,6 +26,9 @@ int main(void)
 
     mbdemo_ns::thread_pid[1] = thread_create(stack[1], stack_size,
     PRIORITY_MAIN - 1, CREATE_STACKTEST, btn_lcd_handler, NULL, "BTN-LCD");
+
+    mbdemo_ns::thread_pid[2] = thread_create(stack[2], stack_size,
+    PRIORITY_MAIN - 1, CREATE_STACKTEST, sim900_proc_handler, NULL, "SIMPROC");
 
     /* Run shell */
     ha_shell_irun(NULL);
