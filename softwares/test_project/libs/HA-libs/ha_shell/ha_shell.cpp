@@ -78,6 +78,7 @@ const shell_command_t shell_commands[] = {
 	{"button_test", "Button EB testing command", button_test},
 	{"lcd_test", "LCD EB testing command", lcd_test},
 	{"caneb_test", "CAN EB testing command", caneb_test},
+	{"sim900_test", "SIM900 EB testing command", sim900_test},
 #endif
     {NULL, NULL, NULL}
 };

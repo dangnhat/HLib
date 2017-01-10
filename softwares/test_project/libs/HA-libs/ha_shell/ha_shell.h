@@ -42,6 +42,7 @@ extern "C" {
 #include "button_testing_cmds.h"
 #include "lcd_testing_cmds.h"
 #include "caneb_testing_cmds.h"
+#include "sim900_testing_cmds.h"
 #endif
 
 namespace ha_ns {
