@@ -326,12 +326,12 @@ void bglib_usart_isr(void) {
 void ble_evt_system_boot(const struct ble_msg_system_boot_evt_t *msg)
 {
     HA_NOTIFY("\nBGLib callback: SYSTEM BOOT.\n");
-    HA_NOTIFY("- Software version:\n"
-            "\tmajor(%hu), minor(%hu), \n"
-            "\tpatch(%hu), build(%hu),\n"
-            "\tll version(%hu), protocol version(%hu),\n"
-            "\thw version(%hu).\n", msg->major, msg->minor, msg->patch, msg->build,
-            msg->ll_version, msg->protocol_version, msg->hw);
+//    HA_NOTIFY("- Software version:\n"
+//            "\tmajor(%hu), minor(%hu), \n"
+//            "\tpatch(%hu), build(%hu),\n"
+//            "\tll version(%hu), protocol version(%hu),\n"
+//            "\thw version(%hu).\n", msg->major, msg->minor, msg->patch, msg->build,
+//            msg->ll_version, msg->protocol_version, msg->hw);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -350,12 +350,12 @@ void ble_rsp_system_hello(const void *nul)
 void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
 {
     HA_NOTIFY("\nBGLib callback: SYSTEM GET INFO.\n");
-    HA_NOTIFY("- Software version: "
-            "\tmajor(%hu), minor(%hu), \n"
-            "\tpatch(%hu), build(%hu),\n"
-            "\tll version(%hu), protocol version(%hu),\n"
-            "\thw version(%hu).\n", msg->major, msg->minor, msg->patch, msg->build,
-            msg->ll_version, msg->protocol_version, msg->hw);
+//    HA_NOTIFY("- Software version: "
+//            "\tmajor(%hu), minor(%hu), \n"
+//            "\tpatch(%hu), build(%hu),\n"
+//            "\tll version(%hu), protocol version(%hu),\n"
+//            "\thw version(%hu).\n", msg->major, msg->minor, msg->patch, msg->build,
+//            msg->ll_version, msg->protocol_version, msg->hw);
 }
 
 /*----------------------------------------------------------------------------*/

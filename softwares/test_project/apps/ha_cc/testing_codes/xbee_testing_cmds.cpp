@@ -41,6 +41,7 @@ const char xbee_erx_test_usage[] = "Usage:\n"
         "\twill be sent to XBee module every 500ms.\n"
         "xbee_test -t, ETx LED test.\n"
         "xbee_test -c, XBee and MBoard communication test.\n"
+        "xbee_test -f, XBee and MBoard full test.\n"
         "xbee_test -h, print the usage.\n"
         "Press ESC to stop the test.\n";
 
@@ -75,6 +76,11 @@ void xbee_etx_test(void);
  *          ATCN, Exit command mode when ESC is pressed.
  */
 void xbee_communication_test(void);
+
+/**
+ * @brief   Full test.
+ */
+void xbee_full_test(void);
 
 /* Public function implementations */
 /*----------------------------------------------------------------------------*/
@@ -112,6 +118,11 @@ void xbee_test(int argc, char **argv)
                 case 'c':
                     /* Communication test*/
                     xbee_communication_test();
+                    break;
+
+                case 'f':
+                    /* full test */
+                    xbee_full_test();
                     break;
 
                 case 'h':
@@ -295,4 +306,19 @@ void xbee_warm_reset_test(void)
 
     stop_waiting_esc_character();
     HA_NOTIFY("Test stopped.\n");
+}
+
+/*----------------------------------------------------------------------------*/
+void xbee_full_test(void)
+{
+    xbee_testing_init();
+
+    xbee_warm_reset_test();
+
+    xbee_erx_test();
+
+    xbee_etx_test();
+
+    xbee_communication_test();
+
 }
